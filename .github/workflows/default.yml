@@ -1,0 +1,28 @@
+# Copyright © 2022 Durudex
+
+# This source code is licensed under the MIT license found in the
+# LICENSE file in the root directory of this source tree.
+
+name: Linter
+
+on:
+  push:
+    branches:
+      - '**'
+      - '!main'
+      - '!dev'
+  pull_request:
+    branches:
+      - '**'
+      - '!main'
+      - '!dev'
+
+jobs:
+  linter:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v2
+        with:
+          version: v1.43.0

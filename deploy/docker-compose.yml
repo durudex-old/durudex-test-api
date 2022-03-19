@@ -10,7 +10,5 @@ services:
     image: 'durudex-test-api:latest'
     container_name: durudex-test-api
     restart: always
-    volumes:
-      - ../.bin/:/root/
     ports:
       - 8000:8000

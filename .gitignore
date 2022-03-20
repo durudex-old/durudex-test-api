@@ -6,3 +6,4 @@
 # Local files
 .bin/
 .DS_Store
+.env

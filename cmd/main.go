@@ -10,6 +10,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/durudex/durudex-test-api/internal/delivery/graphql"
 )
@@ -20,9 +21,12 @@ func main() {
 	http.Handle("/", handler.PlaygroundHandler())
 	http.Handle("/query", handler.GraphqlHandler())
 
-	log.Println("Server is runned it 'localhost:8000'")
+	host := os.Getenv("API_HOST")
+	port := os.Getenv("API_PORT")
 
-	if err := http.ListenAndServe(":8000", nil); err != nil {
+	log.Printf("Server is runned it '%s:%s'", host, port)
+
+	if err := http.ListenAndServe(host+":"+port, nil); err != nil {
 		log.Fatalf("error running http server: %s", err.Error())
 	}
 }

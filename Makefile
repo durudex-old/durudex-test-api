@@ -5,7 +5,7 @@
 
 .PHONY: build
 build:
-	go mod download && CGO_ENABLE=0 GOOS=linux go build -o ./.bin/app ./cmd/main.go
+	docker build -t durudex-test-api .
 
 .PHONY: run
 run: build

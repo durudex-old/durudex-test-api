@@ -24,6 +24,13 @@ Application for testing Durudex API.
 + [Docker](https://www.docker.com)
 
 ## ⚙️ Build & Run
+1) Create an `.env` file in the root directory and add the following values from `.env.example`:
+```env
+# API Configurations:
+API_HOST=
+API_PORT=8000
+```
+
 Use `make run` to run and `make build` to build project.
 
 ## 👍 Contribute

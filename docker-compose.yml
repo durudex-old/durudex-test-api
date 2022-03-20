@@ -7,12 +7,10 @@ version: '3.8'
 
 services:
   app:
-    image: durudex-test-api
+    image: 'durudex-test-api:latest'
     container_name: durudex-test-api
-    build:
-      context: .
-      dockerfile: Dockerfile
-    volumes:
-      - ./.bin/:/root/
+    restart: always
     ports:
       - 8000:8000
+    env_file:
+      - .env

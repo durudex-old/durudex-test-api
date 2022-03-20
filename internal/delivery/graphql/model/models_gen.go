@@ -26,11 +26,6 @@ type SignUpInput struct {
 	Password string `json:"password"`
 }
 
-// Status.
-type Status struct {
-	Status bool `json:"status"`
-}
-
 // Authorization tokens.
 type Tokens struct {
 	// JWT access token.

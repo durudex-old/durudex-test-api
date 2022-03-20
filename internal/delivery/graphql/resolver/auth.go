@@ -22,3 +22,7 @@ func (r *mutationResolver) SignIn(ctx context.Context, input model.SignInInput) 
 func (r *mutationResolver) RefreshTokens(ctx context.Context, input model.RefreshTokensInput) (*model.Tokens, error) {
 	return &model.Tokens{Access: faker.Jwt(), Refresh: faker.Password()}, nil
 }
+
+func (r *mutationResolver) Logout(ctx context.Context, input model.RefreshTokensInput) (bool, error) {
+	return true, nil
+}

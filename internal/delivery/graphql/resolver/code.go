@@ -9,6 +9,6 @@ import (
 	"github.com/durudex/durudex-test-api/internal/delivery/graphql/model"
 )
 
-func (r *mutationResolver) GetCodeByEmail(ctx context.Context, input model.GetCodeByEmailInput) (*model.Status, error) {
-	return &model.Status{Status: true}, nil
+func (r *mutationResolver) GetCodeByEmail(ctx context.Context, input model.GetCodeByEmailInput) (bool, error) {
+	return true, nil
 }

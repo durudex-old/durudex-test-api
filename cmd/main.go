@@ -9,24 +9,26 @@ package main
 
 import (
 	"log"
-	"net/http"
 	"os"
 
-	"github.com/durudex/durudex-test-api/internal/delivery/graphql"
+	"github.com/durudex/durudex-test-api/internal/delivery/http"
+
+	"github.com/gofiber/fiber/v2"
 )
 
 func main() {
-	handler := graphql.NewHandler()
+	app := fiber.New(fiber.Config{})
 
-	http.Handle("/", handler.PlaygroundHandler())
-	http.Handle("/query", handler.GraphqlHandler())
+	handler := http.NewHandler()
+
+	handler.InitRoutes(app)
 
 	host := os.Getenv("API_HOST")
 	port := os.Getenv("API_PORT")
 
 	log.Printf("Server is runned it '%s:%s'", host, port)
 
-	if err := http.ListenAndServe(host+":"+port, nil); err != nil {
+	if err := app.Listen(host + ":" + port); err != nil {
 		log.Fatalf("error running http server: %s", err.Error())
 	}
 }

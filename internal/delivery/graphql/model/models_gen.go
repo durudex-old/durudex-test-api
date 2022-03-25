@@ -4,6 +4,7 @@ package model
 
 // Getting code by email address input.
 type GetCodeByEmailInput struct {
+	// User email.
 	Email string `json:"email"`
 }
 
@@ -15,15 +16,22 @@ type RefreshTokensInput struct {
 
 // User Sign In input.
 type SignInInput struct {
+	// Account username.
 	Username string `json:"username"`
+	// User password
 	Password string `json:"password"`
 }
 
 // User Sign Up input.
 type SignUpInput struct {
+	// Account username.
 	Username string `json:"username"`
-	Email    string `json:"email"`
+	// User email.
+	Email string `json:"email"`
+	// User password.
 	Password string `json:"password"`
+	// User verification code.
+	Code uint64 `json:"code"`
 }
 
 // Authorization tokens.

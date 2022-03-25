@@ -22,6 +22,9 @@ resolver:
   filename_template: "{name}.go"
 
 models:
+  ID:
+    model:
+      - github.com/99designs/gqlgen/graphql.Uint64
   Int:
     model:
       - github.com/99designs/gqlgen/graphql.Int

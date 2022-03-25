@@ -14,13 +14,9 @@ import (
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
-func (h *Handler) emailCode(ctx context.Context, obj interface{}, next graphql.Resolver, email string, code uint64) (interface{}, error) {
-	return next(ctx)
-}
-
-func (h *Handler) auth(ctx context.Context, obj interface{}, next graphql.Resolver) (interface{}, error) {
+func (h *Handler) isAuth(ctx context.Context, obj interface{}, next graphql.Resolver) (interface{}, error) {
 	if status := ctx.Value("auth"); status == false || status == nil {
-		return nil, &gqlerror.Error{Message: "No authorization token"}
+		return nil, &gqlerror.Error{Message: "Authorization token failed"}
 	}
 
 	return next(ctx)

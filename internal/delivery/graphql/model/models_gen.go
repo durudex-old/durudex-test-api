@@ -2,6 +2,20 @@
 
 package model
 
+// Forgot user password input.
+type ForgotPasswordInput struct {
+	// Username.
+	Username *string `json:"username"`
+	// User email.
+	Email string `json:"email"`
+	// Old user password.
+	Old string `json:"old"`
+	// New user password.
+	New string `json:"new"`
+	// User verification code.
+	Code uint64 `json:"code"`
+}
+
 // Getting code by email address input.
 type GetCodeByEmailInput struct {
 	// User email.
@@ -9,7 +23,7 @@ type GetCodeByEmailInput struct {
 }
 
 // Authorization refresh token input.
-type RefreshTokensInput struct {
+type RefreshTokenInput struct {
 	// Refresh token.
 	Token string `json:"token"`
 }

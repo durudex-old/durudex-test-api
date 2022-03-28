@@ -19,10 +19,14 @@ func (r *mutationResolver) SignIn(ctx context.Context, input model.SignInInput) 
 	return &model.Tokens{Access: faker.Jwt(), Refresh: faker.Password()}, nil
 }
 
-func (r *mutationResolver) RefreshTokens(ctx context.Context, input model.RefreshTokensInput) (*model.Tokens, error) {
+func (r *mutationResolver) RefreshTokens(ctx context.Context, input model.RefreshTokenInput) (*model.Tokens, error) {
 	return &model.Tokens{Access: faker.Jwt(), Refresh: faker.Password()}, nil
 }
 
-func (r *mutationResolver) Logout(ctx context.Context, input model.RefreshTokensInput) (bool, error) {
+func (r *mutationResolver) Logout(ctx context.Context, input model.RefreshTokenInput) (bool, error) {
+	return true, nil
+}
+
+func (r *mutationResolver) ForgotPassword(ctx context.Context, input model.ForgotPasswordInput) (bool, error) {
 	return true, nil
 }

@@ -335,24 +335,14 @@ Forgot user password input.
 """
 input ForgotPasswordInput {
   """
-  Username.
-  """
-  username: String
-
-  """
   User email.
   """
   email: String!
 
   """
-  Old user password.
-  """
-  old: String!
-
-  """
   New user password.
   """
-  new: String!
+  password: String!
 
   """
   User verification code.
@@ -367,17 +357,17 @@ input ForgotPasswordInput {
 
 extend type Mutation {
   """
-  Getting code by email address.
+  Getting verification code by email address.
   """
   getCodeByEmail(input: GetCodeByEmailInput!): Boolean!
 }
 
 """
-Getting code by email address input.
+Getting verification code by email address input.
 """
 input GetCodeByEmailInput {
   """
-  User email.
+  User email address.
   """
   email: String!
 }
@@ -2225,14 +2215,6 @@ func (ec *executionContext) unmarshalInputForgotPasswordInput(ctx context.Contex
 
 	for k, v := range asMap {
 		switch k {
-		case "username":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("username"))
-			it.Username, err = ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
 		case "email":
 			var err error
 
@@ -2241,19 +2223,11 @@ func (ec *executionContext) unmarshalInputForgotPasswordInput(ctx context.Contex
 			if err != nil {
 				return it, err
 			}
-		case "old":
+		case "password":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("old"))
-			it.Old, err = ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "new":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("new"))
-			it.New, err = ec.unmarshalNString2string(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("password"))
+			it.Password, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}

@@ -4,21 +4,17 @@ package model
 
 // Forgot user password input.
 type ForgotPasswordInput struct {
-	// Username.
-	Username *string `json:"username"`
 	// User email.
 	Email string `json:"email"`
-	// Old user password.
-	Old string `json:"old"`
 	// New user password.
-	New string `json:"new"`
+	Password string `json:"password"`
 	// User verification code.
 	Code uint64 `json:"code"`
 }
 
-// Getting code by email address input.
+// Getting verification code by email address input.
 type GetCodeByEmailInput struct {
-	// User email.
+	// User email address.
 	Email string `json:"email"`
 }
 

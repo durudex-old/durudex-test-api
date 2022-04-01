@@ -69,8 +69,8 @@ type MutationResolver interface {
 	SignIn(ctx context.Context, input model.SignInInput) (*model.Tokens, error)
 	RefreshTokens(ctx context.Context, input model.RefreshTokenInput) (*model.Tokens, error)
 	Logout(ctx context.Context, input model.RefreshTokenInput) (bool, error)
-	ForgotPassword(ctx context.Context, input model.ForgotPasswordInput) (bool, error)
 	GetCodeByEmail(ctx context.Context, input model.GetCodeByEmailInput) (bool, error)
+	ForgotPassword(ctx context.Context, input model.ForgotPasswordInput) (bool, error)
 }
 type QueryResolver interface {
 	Ping(ctx context.Context) (string, error)
@@ -273,11 +273,6 @@ extend type Mutation {
   Logout user session by refresh token.
   """
   logout(input: RefreshTokenInput!): Boolean! @isAuth
-
-  """
-  Forgot user password.
-  """
-  forgotPassword(input: ForgotPasswordInput!): Boolean!
 }
 
 """
@@ -328,26 +323,6 @@ input RefreshTokenInput {
   Refresh token.
   """
   token: String!
-}
-
-"""
-Forgot user password input.
-"""
-input ForgotPasswordInput {
-  """
-  User email.
-  """
-  email: String!
-
-  """
-  New user password.
-  """
-  password: String!
-
-  """
-  User verification code.
-  """
-  code: Uint64!
 }
 `, BuiltIn: false},
 	{Name: "schema/src/code.graphqls", Input: `# Copyright © 2022 Durudex
@@ -400,6 +375,38 @@ type Mutation
 
 type Query {
   ping: String!
+}
+`, BuiltIn: false},
+	{Name: "schema/src/user.graphqls", Input: `# Copyright © 2022 Durudex
+
+# This source code is licensed under the MIT license found in the
+# LICENSE file in the root directory of this source tree.
+
+extend type Mutation {
+  """
+  Forgot user password.
+  """
+  forgotPassword(input: ForgotPasswordInput!): Boolean!
+}
+
+"""
+Forgot user password input.
+"""
+input ForgotPasswordInput {
+  """
+  User email.
+  """
+  email: String!
+
+  """
+  New user password.
+  """
+  password: String!
+
+  """
+  User verification code.
+  """
+  code: Uint64!
 }
 `, BuiltIn: false},
 	{Name: "schema/src/types/token.graphqls", Input: `# Copyright © 2022 Durudex
@@ -760,48 +767,6 @@ func (ec *executionContext) _Mutation_logout(ctx context.Context, field graphql.
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Mutation_forgotPassword(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Mutation_forgotPassword_args(ctx, rawArgs)
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	fc.Args = args
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().ForgotPassword(rctx, args["input"].(model.ForgotPasswordInput))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(bool)
-	fc.Result = res
-	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
-}
-
 func (ec *executionContext) _Mutation_getCodeByEmail(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -828,6 +793,48 @@ func (ec *executionContext) _Mutation_getCodeByEmail(ctx context.Context, field 
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
 		return ec.resolvers.Mutation().GetCodeByEmail(rctx, args["input"].(model.GetCodeByEmailInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_forgotPassword(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_forgotPassword_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().ForgotPassword(rctx, args["input"].(model.ForgotPasswordInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2436,9 +2443,9 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "forgotPassword":
+		case "getCodeByEmail":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_forgotPassword(ctx, field)
+				return ec._Mutation_getCodeByEmail(ctx, field)
 			}
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, innerFunc)
@@ -2446,9 +2453,9 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "getCodeByEmail":
+		case "forgotPassword":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_getCodeByEmail(ctx, field)
+				return ec._Mutation_forgotPassword(ctx, field)
 			}
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, innerFunc)

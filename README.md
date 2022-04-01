@@ -33,6 +33,12 @@ API_PORT=8000
 
 Use `make run` to run and `make build` to build project.
 
+## ❌ False input data
+
++ Email - **false@false.false**
++ Code - **0**
++ Other - **false**
+
 ## 👍 Contribute
 If you want to say thank you and/or support the active development of [Durudex](https://github.com/durudex):
 1) Add a [GitHub Star](https://github.com/durudex/durudex-test-api/stargazers) to the project.

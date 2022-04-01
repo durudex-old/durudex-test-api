@@ -7,26 +7,47 @@ import (
 	"context"
 	"math/rand"
 
-	faker "github.com/bxcodec/faker/v3"
 	"github.com/durudex/durudex-test-api/internal/delivery/graphql/model"
+	"github.com/durudex/durudex-test-api/internal/domain"
+
+	faker "github.com/bxcodec/faker/v3"
+	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
 func (r *mutationResolver) SignUp(ctx context.Context, input model.SignUpInput) (uint64, error) {
+	if input.Username == domain.FalseOther {
+		return 0, &gqlerror.Error{Message: "Username already exists"}
+	} else if input.Email == domain.FalseEmail {
+		return 0, &gqlerror.Error{Message: "Email already exists"}
+	} else if input.Code == domain.FalseCode {
+		return 0, &gqlerror.Error{Message: "Code denied"}
+	}
+
 	return rand.Uint64(), nil
 }
 
 func (r *mutationResolver) SignIn(ctx context.Context, input model.SignInInput) (*model.Tokens, error) {
+	if input.Username == domain.FalseOther {
+		return nil, &gqlerror.Error{Message: "User not found"}
+	} else if input.Password == domain.FalseOther {
+		return nil, &gqlerror.Error{Message: "Password incorrect"}
+	}
+
 	return &model.Tokens{Access: faker.Jwt(), Refresh: faker.Password()}, nil
 }
 
 func (r *mutationResolver) RefreshTokens(ctx context.Context, input model.RefreshTokenInput) (*model.Tokens, error) {
+	if input.Token == domain.FalseOther {
+		return nil, &gqlerror.Error{Message: "Session not found"}
+	}
+
 	return &model.Tokens{Access: faker.Jwt(), Refresh: faker.Password()}, nil
 }
 
 func (r *mutationResolver) Logout(ctx context.Context, input model.RefreshTokenInput) (bool, error) {
-	return true, nil
-}
+	if input.Token == domain.FalseOther {
+		return false, &gqlerror.Error{Message: "Session not found"}
+	}
 
-func (r *mutationResolver) ForgotPassword(ctx context.Context, input model.ForgotPasswordInput) (bool, error) {
 	return true, nil
 }

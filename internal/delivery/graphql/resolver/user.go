@@ -12,9 +12,11 @@ import (
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
-func (r *mutationResolver) GetCodeByEmail(ctx context.Context, input model.GetCodeByEmailInput) (bool, error) {
+func (r *mutationResolver) ForgotPassword(ctx context.Context, input model.ForgotPasswordInput) (bool, error) {
 	if input.Email == domain.FalseEmail {
 		return false, &gqlerror.Error{Message: "Email denied"}
+	} else if input.Code == domain.FalseCode {
+		return false, &gqlerror.Error{Message: "Code denied"}
 	}
 
 	return true, nil

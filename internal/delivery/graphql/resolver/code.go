@@ -8,7 +8,6 @@ import (
 
 	"github.com/durudex/durudex-test-api/internal/delivery/graphql/model"
 	"github.com/durudex/durudex-test-api/internal/domain"
-
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 

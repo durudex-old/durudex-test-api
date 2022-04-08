@@ -5,25 +5,23 @@ package resolver
 
 import (
 	"context"
-	"math/rand"
-
-	"github.com/durudex/durudex-test-api/internal/delivery/graphql/model"
-	"github.com/durudex/durudex-test-api/internal/domain"
 
 	faker "github.com/bxcodec/faker/v3"
+	"github.com/durudex/durudex-test-api/internal/delivery/graphql/model"
+	"github.com/durudex/durudex-test-api/internal/domain"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
-func (r *mutationResolver) SignUp(ctx context.Context, input model.SignUpInput) (uint64, error) {
+func (r *mutationResolver) SignUp(ctx context.Context, input model.SignUpInput) (string, error) {
 	if input.Username == domain.FalseOther {
-		return 0, &gqlerror.Error{Message: "Username already exists"}
+		return "", &gqlerror.Error{Message: "Username already exists"}
 	} else if input.Email == domain.FalseEmail {
-		return 0, &gqlerror.Error{Message: "Email already exists"}
+		return "", &gqlerror.Error{Message: "Email already exists"}
 	} else if input.Code == domain.FalseCode {
-		return 0, &gqlerror.Error{Message: "Code denied"}
+		return "", &gqlerror.Error{Message: "Code denied"}
 	}
 
-	return rand.Uint64(), nil
+	return faker.UUIDHyphenated(), nil
 }
 
 func (r *mutationResolver) SignIn(ctx context.Context, input model.SignInInput) (*model.Tokens, error) {

@@ -24,7 +24,7 @@ resolver:
 models:
   ID:
     model:
-      - github.com/99designs/gqlgen/graphql.Uint64
+      - github.com/99designs/gqlgen/graphql.ID
   Int:
     model:
       - github.com/99designs/gqlgen/graphql.Int

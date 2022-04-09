@@ -5,9 +5,13 @@ package resolver
 
 import (
 	"context"
+	"math/rand"
+	"time"
 
 	"github.com/durudex/durudex-test-api/internal/delivery/graphql/model"
 	"github.com/durudex/durudex-test-api/internal/domain"
+
+	"github.com/bxcodec/faker/v3"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
@@ -19,4 +23,19 @@ func (r *mutationResolver) ForgotPassword(ctx context.Context, input model.Forgo
 	}
 
 	return true, nil
+}
+
+func (r *queryResolver) GetUser(ctx context.Context, id string) (*model.User, error) {
+	if id == domain.FalseOther {
+		return nil, &gqlerror.Error{Message: "User not found"}
+	}
+
+	return &model.User{
+		ID:        id,
+		Username:  faker.Username(),
+		JoinedIn:  time.Unix(faker.RandomUnixTime(), 0),
+		LastVisit: time.Unix(faker.RandomUnixTime(), 0),
+		Verified:  rand.Intn(2) == 1,
+		AvatarURL: nil,
+	}, nil
 }

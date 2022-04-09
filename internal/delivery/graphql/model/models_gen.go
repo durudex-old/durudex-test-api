@@ -2,6 +2,14 @@
 
 package model
 
+import (
+	"time"
+)
+
+type Node interface {
+	IsNode()
+}
+
 // Forgot user password input.
 type ForgotPasswordInput struct {
 	// User email.
@@ -51,3 +59,21 @@ type Tokens struct {
 	// Refresh token.
 	Refresh string `json:"refresh"`
 }
+
+// User type.
+type User struct {
+	// User id.
+	ID string `json:"id"`
+	// Username.
+	Username string `json:"username"`
+	// User joined date.
+	JoinedIn time.Time `json:"joinedIn"`
+	// User last visit date.
+	LastVisit time.Time `json:"lastVisit"`
+	// User verified status.
+	Verified bool `json:"verified"`
+	// User avatar url.
+	AvatarURL *string `json:"avatarUrl"`
+}
+
+func (User) IsNode() {}

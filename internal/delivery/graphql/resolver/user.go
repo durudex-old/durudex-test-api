@@ -8,10 +8,9 @@ import (
 	"math/rand"
 	"time"
 
+	faker "github.com/bxcodec/faker/v3"
 	"github.com/durudex/durudex-test-api/internal/delivery/graphql/model"
 	"github.com/durudex/durudex-test-api/internal/domain"
-
-	"github.com/bxcodec/faker/v3"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
@@ -33,9 +32,16 @@ func (r *queryResolver) GetUser(ctx context.Context, id string) (*model.User, er
 	return &model.User{
 		ID:        id,
 		Username:  faker.Username(),
-		JoinedIn:  time.Unix(faker.RandomUnixTime(), 0),
+		CreatedAt: time.Unix(faker.RandomUnixTime(), 0),
 		LastVisit: time.Unix(faker.RandomUnixTime(), 0),
 		Verified:  rand.Intn(2) == 1,
-		AvatarURL: nil,
+		AvatarURL: func() *string {
+			if rand.Intn(2) == 1 {
+				avatarURL := "https://cdn.durudex.com/avatar/" + id + ".png"
+				return &avatarURL
+			} else {
+				return nil
+			}
+		}(),
 	}, nil
 }

@@ -10,6 +10,12 @@ type Node interface {
 	IsNode()
 }
 
+// Create post input.
+type CreatePostInput struct {
+	// Post text.
+	Text string `json:"text"`
+}
+
 // Forgot user password input.
 type ForgotPasswordInput struct {
 	// User email.
@@ -25,6 +31,22 @@ type GetCodeByEmailInput struct {
 	// User email address.
 	Email string `json:"email"`
 }
+
+// Post type.
+type Post struct {
+	// Post id.
+	ID string `json:"id"`
+	// User author id.
+	UserID string `json:"userId"`
+	// Post text.
+	Text string `json:"text"`
+	// Post created date.
+	CreatedAt time.Time `json:"createdAt"`
+	// Post updated date.
+	UpdatedAt *time.Time `json:"updatedAt"`
+}
+
+func (Post) IsNode() {}
 
 // Authorization refresh token input.
 type RefreshTokenInput struct {
@@ -66,8 +88,8 @@ type User struct {
 	ID string `json:"id"`
 	// Username.
 	Username string `json:"username"`
-	// User joined date.
-	JoinedIn time.Time `json:"joinedIn"`
+	// User created date.
+	CreatedAt time.Time `json:"createdAt"`
 	// User last visit date.
 	LastVisit time.Time `json:"lastVisit"`
 	// User verified status.

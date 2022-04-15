@@ -19,14 +19,7 @@ http {
         listen 80;
         listen [::]:80;
         server_name ${SERVER_NAME};
-
-        location /.well-known/acme-challenge {
-            root /var/www/html;
-        }
-
-        location / {
-            return 302 https://$server_name$request_uri;
-        }
+        return 302 https://$server_name$request_uri;
     }
 
     server {

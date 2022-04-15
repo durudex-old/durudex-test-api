@@ -6,4 +6,5 @@
 # Local files
 .bin/
 .DS_Store
+*.pem
 .env

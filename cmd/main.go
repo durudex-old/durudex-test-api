@@ -23,12 +23,11 @@ func main() {
 
 	handler.InitRoutes(app)
 
-	host := os.Getenv("API_HOST")
 	port := os.Getenv("API_PORT")
 
-	log.Printf("Server is runned it '%s:%s'", host, port)
+	log.Printf("Server is runned it ':%s'", port)
 
-	if err := app.Listen(host + ":" + port); err != nil {
+	if err := app.Listen(":" + port); err != nil {
 		log.Fatalf("error running http server: %s", err.Error())
 	}
 }

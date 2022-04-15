@@ -24,3 +24,6 @@ trim_trailing_whitespace = false
 
 [Dockerfile]
 indent_size = 4
+
+[*.conf]
+indent_size = 4

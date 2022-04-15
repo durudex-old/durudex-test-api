@@ -6,11 +6,35 @@
 version: '3.8'
 
 services:
-  app:
+  api:
     image: v1def/durudex-test-api:latest
     container_name: durudex-test-api
     restart: always
+    hostname: api.durudex.local
     ports:
-      - 80:80
+      - 8000:8000
     env_file:
       - .env
+    networks:
+      - durudex-backend
+
+  nginx:
+    image: durudex-test-proxy:latest
+    container_name: durudex-test-proxy
+    restart: always
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./certs/:/etc/nginx/certs/
+    depends_on:
+      - api
+    env_file:
+      - .env
+    networks:
+      - durudex-backend
+
+networks:
+  durudex-backend:
+    driver: bridge
+    name: durudex-backend

@@ -21,7 +21,7 @@ http {
         server_name ${SERVER_NAME};
 
         location /.well-known/acme-challenge {
-            root /var/www/letsencrypt;
+            root /var/www/html;
         }
 
         location / {

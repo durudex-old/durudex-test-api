@@ -25,7 +25,7 @@ func (r *queryResolver) GetPost(ctx context.Context, id string) (*model.Post, er
 
 	return &model.Post{
 		ID:        id,
-		UserID:    faker.UUIDHyphenated(),
+		AuthorID:  faker.UUIDHyphenated(),
 		Text:      faker.Sentence(),
 		CreatedAt: time.Unix(faker.RandomUnixTime(), 0),
 		UpdatedAt: func() *time.Time {

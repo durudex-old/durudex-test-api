@@ -56,11 +56,11 @@ type ComplexityRoot struct {
 	}
 
 	Post struct {
+		AuthorID  func(childComplexity int) int
 		CreatedAt func(childComplexity int) int
 		ID        func(childComplexity int) int
 		Text      func(childComplexity int) int
 		UpdatedAt func(childComplexity int) int
-		UserID    func(childComplexity int) int
 	}
 
 	Query struct {
@@ -196,6 +196,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.SignUp(childComplexity, args["input"].(model.SignUpInput)), true
 
+	case "Post.authorId":
+		if e.complexity.Post.AuthorID == nil {
+			break
+		}
+
+		return e.complexity.Post.AuthorID(childComplexity), true
+
 	case "Post.createdAt":
 		if e.complexity.Post.CreatedAt == nil {
 			break
@@ -223,13 +230,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Post.UpdatedAt(childComplexity), true
-
-	case "Post.userId":
-		if e.complexity.Post.UserID == nil {
-			break
-		}
-
-		return e.complexity.Post.UserID(childComplexity), true
 
 	case "Query.getPost":
 		if e.complexity.Query.GetPost == nil {
@@ -494,6 +494,9 @@ input GetCodeByEmailInput {
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
 
+"""
+Authorization directive.
+"""
 directive @isAuth on FIELD_DEFINITION
 `, BuiltIn: false},
 	{Name: "schema/src/post.graphqls", Input: `# Copyright © 2022 Durudex
@@ -513,7 +516,7 @@ type Post implements Node {
   """
   User author id.
   """
-  userId: ID!
+  authorId: ID!
 
   """
   Post text.
@@ -580,10 +583,19 @@ schema {
   query: Query
 }
 
+"""
+Durudex API Mutations.
+"""
 type Mutation
 
+"""
+Durudex API Queries.
+"""
 type Query
 
+"""
+GraphQL Node interface.
+"""
 interface Node {
   id: ID!
 }
@@ -1226,7 +1238,7 @@ func (ec *executionContext) _Post_id(ctx context.Context, field graphql.Collecte
 	return ec.marshalNID2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Post_userId(ctx context.Context, field graphql.CollectedField, obj *model.Post) (ret graphql.Marshaler) {
+func (ec *executionContext) _Post_authorId(ctx context.Context, field graphql.CollectedField, obj *model.Post) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1244,7 +1256,7 @@ func (ec *executionContext) _Post_userId(ctx context.Context, field graphql.Coll
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.UserID, nil
+		return obj.AuthorID, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3312,9 +3324,9 @@ func (ec *executionContext) _Post(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "userId":
+		case "authorId":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Post_userId(ctx, field, obj)
+				return ec._Post_authorId(ctx, field, obj)
 			}
 
 			out.Values[i] = innerFunc(ctx)

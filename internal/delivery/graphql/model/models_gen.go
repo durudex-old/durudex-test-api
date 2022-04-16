@@ -6,6 +6,7 @@ import (
 	"time"
 )
 
+// GraphQL Node interface.
 type Node interface {
 	IsNode()
 }
@@ -37,7 +38,7 @@ type Post struct {
 	// Post id.
 	ID string `json:"id"`
 	// User author id.
-	UserID string `json:"userId"`
+	AuthorID string `json:"authorId"`
 	// Post text.
 	Text string `json:"text"`
 	// Post created date.

@@ -18,6 +18,14 @@ func (r *mutationResolver) CreatePost(ctx context.Context, input model.CreatePos
 	return faker.UUIDHyphenated(), nil
 }
 
+func (r *mutationResolver) DeletePost(ctx context.Context, id string) (bool, error) {
+	if id == domain.FalseOther {
+		return false, &gqlerror.Error{Message: "Post not found"}
+	}
+
+	return true, nil
+}
+
 func (r *queryResolver) GetPost(ctx context.Context, id string) (*model.Post, error) {
 	if id == domain.FalseOther {
 		return nil, &gqlerror.Error{Message: "Post not found"}

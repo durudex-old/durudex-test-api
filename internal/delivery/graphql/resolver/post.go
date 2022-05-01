@@ -26,6 +26,14 @@ func (r *mutationResolver) DeletePost(ctx context.Context, id string) (bool, err
 	return true, nil
 }
 
+func (r *mutationResolver) UpdatePost(ctx context.Context, input model.UpdatePostInput) (bool, error) {
+	if input.ID == domain.FalseOther {
+		return false, &gqlerror.Error{Message: "Post not found"}
+	}
+
+	return true, nil
+}
+
 func (r *queryResolver) GetPost(ctx context.Context, id string) (*model.Post, error) {
 	if id == domain.FalseOther {
 		return nil, &gqlerror.Error{Message: "Post not found"}

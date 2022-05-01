@@ -8,11 +8,20 @@ import (
 	"math/rand"
 	"time"
 
+	"github.com/99designs/gqlgen/graphql"
 	faker "github.com/bxcodec/faker/v3"
 	"github.com/durudex/durudex-test-api/internal/delivery/graphql/model"
 	"github.com/durudex/durudex-test-api/internal/domain"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
+
+func (r *mutationResolver) CreateVerifyEmailCode(ctx context.Context, email string) (bool, error) {
+	if email == domain.FalseEmail {
+		return false, &gqlerror.Error{Message: "Email already exists"}
+	}
+
+	return true, nil
+}
 
 func (r *mutationResolver) ForgotPassword(ctx context.Context, input model.ForgotPasswordInput) (bool, error) {
 	if input.Email == domain.FalseEmail {
@@ -22,6 +31,10 @@ func (r *mutationResolver) ForgotPassword(ctx context.Context, input model.Forgo
 	}
 
 	return true, nil
+}
+
+func (r *mutationResolver) UpdateAvatar(ctx context.Context, file graphql.Upload) (string, error) {
+	return "", nil
 }
 
 func (r *queryResolver) GetUser(ctx context.Context, id string) (*model.User, error) {

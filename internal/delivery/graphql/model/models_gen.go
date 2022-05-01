@@ -4,6 +4,8 @@ package model
 
 import (
 	"time"
+
+	"github.com/99designs/gqlgen/graphql"
 )
 
 // GraphQL Node interface.
@@ -15,6 +17,8 @@ type Node interface {
 type CreatePostInput struct {
 	// Post text.
 	Text string `json:"text"`
+	// Post attachments.
+	Attachments []*UploadFile `json:"attachments"`
 }
 
 // Forgot user password input.
@@ -25,12 +29,6 @@ type ForgotPasswordInput struct {
 	Password string `json:"password"`
 	// User verification code.
 	Code uint64 `json:"code"`
-}
-
-// Getting verification code by email address input.
-type GetCodeByEmailInput struct {
-	// User email address.
-	Email string `json:"email"`
 }
 
 // Post type.
@@ -45,6 +43,8 @@ type Post struct {
 	CreatedAt time.Time `json:"createdAt"`
 	// Post updated date.
 	UpdatedAt *time.Time `json:"updatedAt"`
+	// Post attachments.
+	Attachments []string `json:"attachments"`
 }
 
 func (Post) IsNode() {}
@@ -81,6 +81,22 @@ type Tokens struct {
 	Access string `json:"access"`
 	// Refresh token.
 	Refresh string `json:"refresh"`
+}
+
+// Update post input.
+type UpdatePostInput struct {
+	// Post id.
+	ID string `json:"id"`
+	// Post text.
+	Text string `json:"text"`
+}
+
+// Upload files input.
+type UploadFile struct {
+	// File id.
+	ID int `json:"id"`
+	// File data.
+	File graphql.Upload `json:"file"`
 }
 
 // User type.

@@ -12,21 +12,24 @@ import (
 
 	"github.com/durudex/durudex-test-api/internal/delivery/graphql/generated"
 	"github.com/durudex/durudex-test-api/internal/delivery/graphql/resolver"
+	"github.com/durudex/durudex-test-api/internal/service"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 )
 
 // GraphQL handler structure.
-type Handler struct{}
+type Handler struct{ service *service.Service }
 
 // Creating a new graphql handler.
-func NewHandler() *Handler { return &Handler{} }
+func NewHandler(service *service.Service) *Handler {
+	return &Handler{service: service}
+}
 
 // GraphQL handler.
 func (h *Handler) GraphqlHandler() http.HandlerFunc {
 	config := generated.Config{
-		Resolvers:  resolver.NewResolver(),
+		Resolvers:  resolver.NewResolver(h.service),
 		Directives: generated.DirectiveRoot{IsAuth: h.isAuth},
 	}
 

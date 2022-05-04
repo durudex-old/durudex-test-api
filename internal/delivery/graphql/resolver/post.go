@@ -5,52 +5,22 @@ package resolver
 
 import (
 	"context"
-	"math/rand"
-	"time"
 
-	faker "github.com/bxcodec/faker/v3"
-	"github.com/durudex/durudex-test-api/internal/delivery/graphql/model"
 	"github.com/durudex/durudex-test-api/internal/domain"
-	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
-func (r *mutationResolver) CreatePost(ctx context.Context, input model.CreatePostInput) (string, error) {
-	return faker.UUIDHyphenated(), nil
+func (r *mutationResolver) CreatePost(ctx context.Context, input domain.CreatePostInput) (string, error) {
+	return r.service.Post.CreatePost(ctx, input)
 }
 
 func (r *mutationResolver) DeletePost(ctx context.Context, id string) (bool, error) {
-	if id == domain.FalseOther {
-		return false, &gqlerror.Error{Message: "Post not found"}
-	}
-
-	return true, nil
+	return r.service.Post.DeletePost(ctx, id)
 }
 
-func (r *mutationResolver) UpdatePost(ctx context.Context, input model.UpdatePostInput) (bool, error) {
-	if input.ID == domain.FalseOther {
-		return false, &gqlerror.Error{Message: "Post not found"}
-	}
-
-	return true, nil
+func (r *mutationResolver) UpdatePost(ctx context.Context, input domain.UpdatePostInput) (bool, error) {
+	return r.service.Post.UpdatePost(ctx, input)
 }
 
-func (r *queryResolver) GetPost(ctx context.Context, id string) (*model.Post, error) {
-	if id == domain.FalseOther {
-		return nil, &gqlerror.Error{Message: "Post not found"}
-	}
-
-	return &model.Post{
-		ID:        id,
-		AuthorID:  faker.UUIDHyphenated(),
-		Text:      faker.Sentence(),
-		CreatedAt: time.Unix(faker.RandomUnixTime(), 0),
-		UpdatedAt: func() *time.Time {
-			if rand.Intn(2) == 1 {
-				updatedAt := time.Unix(faker.RandomUnixTime(), 0)
-				return &updatedAt
-			} else {
-				return nil
-			}
-		}(),
-	}, nil
+func (r *queryResolver) Post(ctx context.Context, id string) (*domain.Post, error) {
+	return r.service.Post.Post(ctx, id)
 }

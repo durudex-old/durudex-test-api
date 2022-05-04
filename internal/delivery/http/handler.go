@@ -9,16 +9,19 @@ package http
 
 import (
 	"github.com/durudex/durudex-test-api/internal/delivery/graphql"
+	"github.com/durudex/durudex-test-api/internal/service"
 
 	"github.com/gofiber/adaptor/v2"
 	"github.com/gofiber/fiber/v2"
 )
 
 // HTTP handler structure.
-type Handler struct{}
+type Handler struct{ service *service.Service }
 
 // Creating a new http handler.
-func NewHandler() *Handler { return &Handler{} }
+func NewHandler(service *service.Service) *Handler {
+	return &Handler{service: service}
+}
 
 // Initialize http routes.
 func (h *Handler) InitRoutes(router fiber.Router) {
@@ -26,7 +29,7 @@ func (h *Handler) InitRoutes(router fiber.Router) {
 		return ctx.SendString("pong")
 	})
 
-	graphql := graphql.NewHandler()
+	graphql := graphql.NewHandler(h.service)
 
 	router.Use(h.authMiddleware)
 	router.Get("/", adaptor.HTTPHandlerFunc(graphql.PlaygroundHandler()))

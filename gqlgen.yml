@@ -12,14 +12,17 @@ exec:
   package: generated
 
 model:
-  filename: internal/delivery/graphql/model/models_gen.go
-  package: model
+  filename: internal/delivery/graphql/generated/models_gen.go
+  package: generated
 
 resolver:
   layout: follow-schema
   dir: internal/delivery/graphql/resolver/
   package: resolver
   filename_template: "{name}.go"
+
+autobind:
+  - "github.com/durudex/durudex-test-api/internal/domain"
 
 models:
   ID:

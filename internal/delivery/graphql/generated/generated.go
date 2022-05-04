@@ -13,7 +13,7 @@ import (
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
-	"github.com/durudex/durudex-test-api/internal/delivery/graphql/model"
+	"github.com/durudex/durudex-test-api/internal/domain"
 	gqlparser "github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
 )
@@ -46,21 +46,21 @@ type DirectiveRoot struct {
 
 type ComplexityRoot struct {
 	Mutation struct {
-		CreatePost            func(childComplexity int, input model.CreatePostInput) int
+		CreatePost            func(childComplexity int, input domain.CreatePostInput) int
 		CreateVerifyEmailCode func(childComplexity int, email string) int
 		DeletePost            func(childComplexity int, id string) int
-		ForgotPassword        func(childComplexity int, input model.ForgotPasswordInput) int
-		RefreshToken          func(childComplexity int, input model.RefreshTokenInput) int
-		SignIn                func(childComplexity int, input model.SignInInput) int
-		SignOut               func(childComplexity int, input model.RefreshTokenInput) int
-		SignUp                func(childComplexity int, input model.SignUpInput) int
+		ForgotPassword        func(childComplexity int, input domain.ForgotPasswordInput) int
+		RefreshToken          func(childComplexity int, input domain.RefreshTokenInput) int
+		SignIn                func(childComplexity int, input domain.SignInInput) int
+		SignOut               func(childComplexity int, input domain.RefreshTokenInput) int
+		SignUp                func(childComplexity int, input domain.SignUpInput) int
 		UpdateAvatar          func(childComplexity int, file graphql.Upload) int
-		UpdatePost            func(childComplexity int, input model.UpdatePostInput) int
+		UpdatePost            func(childComplexity int, input domain.UpdatePostInput) int
 	}
 
 	Post struct {
 		Attachments func(childComplexity int) int
-		AuthorID    func(childComplexity int) int
+		Author      func(childComplexity int) int
 		CreatedAt   func(childComplexity int) int
 		ID          func(childComplexity int) int
 		Text        func(childComplexity int) int
@@ -68,8 +68,8 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		GetPost func(childComplexity int, id string) int
-		GetUser func(childComplexity int, id string) int
+		Post func(childComplexity int, id string) int
+		User func(childComplexity int, id string) int
 	}
 
 	Tokens struct {
@@ -88,20 +88,20 @@ type ComplexityRoot struct {
 }
 
 type MutationResolver interface {
-	SignUp(ctx context.Context, input model.SignUpInput) (string, error)
-	SignIn(ctx context.Context, input model.SignInInput) (*model.Tokens, error)
-	SignOut(ctx context.Context, input model.RefreshTokenInput) (bool, error)
-	RefreshToken(ctx context.Context, input model.RefreshTokenInput) (string, error)
-	CreatePost(ctx context.Context, input model.CreatePostInput) (string, error)
+	SignUp(ctx context.Context, input domain.SignUpInput) (string, error)
+	SignIn(ctx context.Context, input domain.SignInInput) (*domain.Tokens, error)
+	SignOut(ctx context.Context, input domain.RefreshTokenInput) (bool, error)
+	RefreshToken(ctx context.Context, input domain.RefreshTokenInput) (string, error)
+	CreatePost(ctx context.Context, input domain.CreatePostInput) (string, error)
 	DeletePost(ctx context.Context, id string) (bool, error)
-	UpdatePost(ctx context.Context, input model.UpdatePostInput) (bool, error)
+	UpdatePost(ctx context.Context, input domain.UpdatePostInput) (bool, error)
 	CreateVerifyEmailCode(ctx context.Context, email string) (bool, error)
-	ForgotPassword(ctx context.Context, input model.ForgotPasswordInput) (bool, error)
+	ForgotPassword(ctx context.Context, input domain.ForgotPasswordInput) (bool, error)
 	UpdateAvatar(ctx context.Context, file graphql.Upload) (string, error)
 }
 type QueryResolver interface {
-	GetPost(ctx context.Context, id string) (*model.Post, error)
-	GetUser(ctx context.Context, id string) (*model.User, error)
+	Post(ctx context.Context, id string) (*domain.Post, error)
+	User(ctx context.Context, id string) (*domain.User, error)
 }
 
 type executableSchema struct {
@@ -129,7 +129,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.CreatePost(childComplexity, args["input"].(model.CreatePostInput)), true
+		return e.complexity.Mutation.CreatePost(childComplexity, args["input"].(domain.CreatePostInput)), true
 
 	case "Mutation.createVerifyEmailCode":
 		if e.complexity.Mutation.CreateVerifyEmailCode == nil {
@@ -165,7 +165,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.ForgotPassword(childComplexity, args["input"].(model.ForgotPasswordInput)), true
+		return e.complexity.Mutation.ForgotPassword(childComplexity, args["input"].(domain.ForgotPasswordInput)), true
 
 	case "Mutation.refreshToken":
 		if e.complexity.Mutation.RefreshToken == nil {
@@ -177,7 +177,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.RefreshToken(childComplexity, args["input"].(model.RefreshTokenInput)), true
+		return e.complexity.Mutation.RefreshToken(childComplexity, args["input"].(domain.RefreshTokenInput)), true
 
 	case "Mutation.signIn":
 		if e.complexity.Mutation.SignIn == nil {
@@ -189,7 +189,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.SignIn(childComplexity, args["input"].(model.SignInInput)), true
+		return e.complexity.Mutation.SignIn(childComplexity, args["input"].(domain.SignInInput)), true
 
 	case "Mutation.signOut":
 		if e.complexity.Mutation.SignOut == nil {
@@ -201,7 +201,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.SignOut(childComplexity, args["input"].(model.RefreshTokenInput)), true
+		return e.complexity.Mutation.SignOut(childComplexity, args["input"].(domain.RefreshTokenInput)), true
 
 	case "Mutation.signUp":
 		if e.complexity.Mutation.SignUp == nil {
@@ -213,7 +213,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.SignUp(childComplexity, args["input"].(model.SignUpInput)), true
+		return e.complexity.Mutation.SignUp(childComplexity, args["input"].(domain.SignUpInput)), true
 
 	case "Mutation.updateAvatar":
 		if e.complexity.Mutation.UpdateAvatar == nil {
@@ -237,7 +237,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.UpdatePost(childComplexity, args["input"].(model.UpdatePostInput)), true
+		return e.complexity.Mutation.UpdatePost(childComplexity, args["input"].(domain.UpdatePostInput)), true
 
 	case "Post.attachments":
 		if e.complexity.Post.Attachments == nil {
@@ -246,12 +246,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Post.Attachments(childComplexity), true
 
-	case "Post.authorId":
-		if e.complexity.Post.AuthorID == nil {
+	case "Post.author":
+		if e.complexity.Post.Author == nil {
 			break
 		}
 
-		return e.complexity.Post.AuthorID(childComplexity), true
+		return e.complexity.Post.Author(childComplexity), true
 
 	case "Post.createdAt":
 		if e.complexity.Post.CreatedAt == nil {
@@ -281,29 +281,29 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Post.UpdatedAt(childComplexity), true
 
-	case "Query.getPost":
-		if e.complexity.Query.GetPost == nil {
+	case "Query.post":
+		if e.complexity.Query.Post == nil {
 			break
 		}
 
-		args, err := ec.field_Query_getPost_args(context.TODO(), rawArgs)
+		args, err := ec.field_Query_post_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Query.GetPost(childComplexity, args["id"].(string)), true
+		return e.complexity.Query.Post(childComplexity, args["id"].(string)), true
 
-	case "Query.getUser":
-		if e.complexity.Query.GetUser == nil {
+	case "Query.user":
+		if e.complexity.Query.User == nil {
 			break
 		}
 
-		args, err := ec.field_Query_getUser_args(context.TODO(), rawArgs)
+		args, err := ec.field_Query_user_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Query.GetUser(childComplexity, args["id"].(string)), true
+		return e.complexity.Query.User(childComplexity, args["id"].(string)), true
 
 	case "Tokens.access":
 		if e.complexity.Tokens.Access == nil {
@@ -553,9 +553,9 @@ type Post implements Node {
   id: ID!
 
   """
-  User author id.
+  Post author.
   """
-  authorId: ID!
+  author: User!
 
   """
   Post text.
@@ -580,9 +580,9 @@ type Post implements Node {
 
 extend type Query {
   """
-  Get post by id.
+  Getting user post.
   """
-  getPost(id: ID!): Post
+  post(id: ID!): Post
 }
 
 extend type Mutation {
@@ -739,9 +739,9 @@ type User implements Node {
 
 extend type Query {
   """
-  Get user by id.
+  Getting user.
   """
-  getUser(id: ID!): User
+  user(id: ID!): User
 }
 
 extend type Mutation {
@@ -791,10 +791,10 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 func (ec *executionContext) field_Mutation_createPost_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 model.CreatePostInput
+	var arg0 domain.CreatePostInput
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNCreatePostInput2githubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdeliveryᚋgraphqlᚋmodelᚐCreatePostInput(ctx, tmp)
+		arg0, err = ec.unmarshalNCreatePostInput2githubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdomainᚐCreatePostInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -836,10 +836,10 @@ func (ec *executionContext) field_Mutation_deletePost_args(ctx context.Context, 
 func (ec *executionContext) field_Mutation_forgotPassword_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 model.ForgotPasswordInput
+	var arg0 domain.ForgotPasswordInput
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNForgotPasswordInput2githubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdeliveryᚋgraphqlᚋmodelᚐForgotPasswordInput(ctx, tmp)
+		arg0, err = ec.unmarshalNForgotPasswordInput2githubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdomainᚐForgotPasswordInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -851,10 +851,10 @@ func (ec *executionContext) field_Mutation_forgotPassword_args(ctx context.Conte
 func (ec *executionContext) field_Mutation_refreshToken_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 model.RefreshTokenInput
+	var arg0 domain.RefreshTokenInput
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNRefreshTokenInput2githubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdeliveryᚋgraphqlᚋmodelᚐRefreshTokenInput(ctx, tmp)
+		arg0, err = ec.unmarshalNRefreshTokenInput2githubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdomainᚐRefreshTokenInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -866,10 +866,10 @@ func (ec *executionContext) field_Mutation_refreshToken_args(ctx context.Context
 func (ec *executionContext) field_Mutation_signIn_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 model.SignInInput
+	var arg0 domain.SignInInput
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNSignInInput2githubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdeliveryᚋgraphqlᚋmodelᚐSignInInput(ctx, tmp)
+		arg0, err = ec.unmarshalNSignInInput2githubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdomainᚐSignInInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -881,10 +881,10 @@ func (ec *executionContext) field_Mutation_signIn_args(ctx context.Context, rawA
 func (ec *executionContext) field_Mutation_signOut_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 model.RefreshTokenInput
+	var arg0 domain.RefreshTokenInput
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNRefreshTokenInput2githubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdeliveryᚋgraphqlᚋmodelᚐRefreshTokenInput(ctx, tmp)
+		arg0, err = ec.unmarshalNRefreshTokenInput2githubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdomainᚐRefreshTokenInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -896,10 +896,10 @@ func (ec *executionContext) field_Mutation_signOut_args(ctx context.Context, raw
 func (ec *executionContext) field_Mutation_signUp_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 model.SignUpInput
+	var arg0 domain.SignUpInput
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNSignUpInput2githubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdeliveryᚋgraphqlᚋmodelᚐSignUpInput(ctx, tmp)
+		arg0, err = ec.unmarshalNSignUpInput2githubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdomainᚐSignUpInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -926,10 +926,10 @@ func (ec *executionContext) field_Mutation_updateAvatar_args(ctx context.Context
 func (ec *executionContext) field_Mutation_updatePost_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 model.UpdatePostInput
+	var arg0 domain.UpdatePostInput
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNUpdatePostInput2githubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdeliveryᚋgraphqlᚋmodelᚐUpdatePostInput(ctx, tmp)
+		arg0, err = ec.unmarshalNUpdatePostInput2githubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdomainᚐUpdatePostInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -953,7 +953,7 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 	return args, nil
 }
 
-func (ec *executionContext) field_Query_getPost_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Query_post_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 string
@@ -968,7 +968,7 @@ func (ec *executionContext) field_Query_getPost_args(ctx context.Context, rawArg
 	return args, nil
 }
 
-func (ec *executionContext) field_Query_getUser_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Query_user_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 string
@@ -1035,7 +1035,7 @@ func (ec *executionContext) _Mutation_signUp(ctx context.Context, field graphql.
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().SignUp(rctx, fc.Args["input"].(model.SignUpInput))
+		return ec.resolvers.Mutation().SignUp(rctx, fc.Args["input"].(domain.SignUpInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1090,7 +1090,7 @@ func (ec *executionContext) _Mutation_signIn(ctx context.Context, field graphql.
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().SignIn(rctx, fc.Args["input"].(model.SignInInput))
+		return ec.resolvers.Mutation().SignIn(rctx, fc.Args["input"].(domain.SignInInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1102,9 +1102,9 @@ func (ec *executionContext) _Mutation_signIn(ctx context.Context, field graphql.
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*model.Tokens)
+	res := resTmp.(*domain.Tokens)
 	fc.Result = res
-	return ec.marshalNTokens2ᚖgithubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdeliveryᚋgraphqlᚋmodelᚐTokens(ctx, field.Selections, res)
+	return ec.marshalNTokens2ᚖgithubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdomainᚐTokens(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_signIn(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1152,7 +1152,7 @@ func (ec *executionContext) _Mutation_signOut(ctx context.Context, field graphql
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		directive0 := func(rctx context.Context) (interface{}, error) {
 			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Mutation().SignOut(rctx, fc.Args["input"].(model.RefreshTokenInput))
+			return ec.resolvers.Mutation().SignOut(rctx, fc.Args["input"].(domain.RefreshTokenInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
 			if ec.directives.IsAuth == nil {
@@ -1226,7 +1226,7 @@ func (ec *executionContext) _Mutation_refreshToken(ctx context.Context, field gr
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().RefreshToken(rctx, fc.Args["input"].(model.RefreshTokenInput))
+		return ec.resolvers.Mutation().RefreshToken(rctx, fc.Args["input"].(domain.RefreshTokenInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1282,7 +1282,7 @@ func (ec *executionContext) _Mutation_createPost(ctx context.Context, field grap
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		directive0 := func(rctx context.Context) (interface{}, error) {
 			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Mutation().CreatePost(rctx, fc.Args["input"].(model.CreatePostInput))
+			return ec.resolvers.Mutation().CreatePost(rctx, fc.Args["input"].(domain.CreatePostInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
 			if ec.directives.IsAuth == nil {
@@ -1432,7 +1432,7 @@ func (ec *executionContext) _Mutation_updatePost(ctx context.Context, field grap
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		directive0 := func(rctx context.Context) (interface{}, error) {
 			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Mutation().UpdatePost(rctx, fc.Args["input"].(model.UpdatePostInput))
+			return ec.resolvers.Mutation().UpdatePost(rctx, fc.Args["input"].(domain.UpdatePostInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
 			if ec.directives.IsAuth == nil {
@@ -1561,7 +1561,7 @@ func (ec *executionContext) _Mutation_forgotPassword(ctx context.Context, field 
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().ForgotPassword(rctx, fc.Args["input"].(model.ForgotPasswordInput))
+		return ec.resolvers.Mutation().ForgotPassword(rctx, fc.Args["input"].(domain.ForgotPasswordInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1677,7 +1677,7 @@ func (ec *executionContext) fieldContext_Mutation_updateAvatar(ctx context.Conte
 	return fc, nil
 }
 
-func (ec *executionContext) _Post_id(ctx context.Context, field graphql.CollectedField, obj *model.Post) (ret graphql.Marshaler) {
+func (ec *executionContext) _Post_id(ctx context.Context, field graphql.CollectedField, obj *domain.Post) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Post_id(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -1721,8 +1721,8 @@ func (ec *executionContext) fieldContext_Post_id(ctx context.Context, field grap
 	return fc, nil
 }
 
-func (ec *executionContext) _Post_authorId(ctx context.Context, field graphql.CollectedField, obj *model.Post) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Post_authorId(ctx, field)
+func (ec *executionContext) _Post_author(ctx context.Context, field graphql.CollectedField, obj *domain.Post) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Post_author(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1735,7 +1735,7 @@ func (ec *executionContext) _Post_authorId(ctx context.Context, field graphql.Co
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.AuthorID, nil
+		return obj.Author, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1747,25 +1747,39 @@ func (ec *executionContext) _Post_authorId(ctx context.Context, field graphql.Co
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*domain.User)
 	fc.Result = res
-	return ec.marshalNID2string(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚖgithubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdomainᚐUser(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Post_authorId(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Post_author(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Post",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type ID does not have child fields")
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_User_id(ctx, field)
+			case "username":
+				return ec.fieldContext_User_username(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_User_createdAt(ctx, field)
+			case "lastVisit":
+				return ec.fieldContext_User_lastVisit(ctx, field)
+			case "verified":
+				return ec.fieldContext_User_verified(ctx, field)
+			case "avatarUrl":
+				return ec.fieldContext_User_avatarUrl(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
 	}
 	return fc, nil
 }
 
-func (ec *executionContext) _Post_text(ctx context.Context, field graphql.CollectedField, obj *model.Post) (ret graphql.Marshaler) {
+func (ec *executionContext) _Post_text(ctx context.Context, field graphql.CollectedField, obj *domain.Post) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Post_text(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -1809,7 +1823,7 @@ func (ec *executionContext) fieldContext_Post_text(ctx context.Context, field gr
 	return fc, nil
 }
 
-func (ec *executionContext) _Post_createdAt(ctx context.Context, field graphql.CollectedField, obj *model.Post) (ret graphql.Marshaler) {
+func (ec *executionContext) _Post_createdAt(ctx context.Context, field graphql.CollectedField, obj *domain.Post) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Post_createdAt(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -1853,7 +1867,7 @@ func (ec *executionContext) fieldContext_Post_createdAt(ctx context.Context, fie
 	return fc, nil
 }
 
-func (ec *executionContext) _Post_updatedAt(ctx context.Context, field graphql.CollectedField, obj *model.Post) (ret graphql.Marshaler) {
+func (ec *executionContext) _Post_updatedAt(ctx context.Context, field graphql.CollectedField, obj *domain.Post) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Post_updatedAt(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -1894,7 +1908,7 @@ func (ec *executionContext) fieldContext_Post_updatedAt(ctx context.Context, fie
 	return fc, nil
 }
 
-func (ec *executionContext) _Post_attachments(ctx context.Context, field graphql.CollectedField, obj *model.Post) (ret graphql.Marshaler) {
+func (ec *executionContext) _Post_attachments(ctx context.Context, field graphql.CollectedField, obj *domain.Post) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Post_attachments(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -1935,8 +1949,8 @@ func (ec *executionContext) fieldContext_Post_attachments(ctx context.Context, f
 	return fc, nil
 }
 
-func (ec *executionContext) _Query_getPost(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_getPost(ctx, field)
+func (ec *executionContext) _Query_post(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_post(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1949,7 +1963,7 @@ func (ec *executionContext) _Query_getPost(ctx context.Context, field graphql.Co
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetPost(rctx, fc.Args["id"].(string))
+		return ec.resolvers.Query().Post(rctx, fc.Args["id"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1958,12 +1972,12 @@ func (ec *executionContext) _Query_getPost(ctx context.Context, field graphql.Co
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*model.Post)
+	res := resTmp.(*domain.Post)
 	fc.Result = res
-	return ec.marshalOPost2ᚖgithubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdeliveryᚋgraphqlᚋmodelᚐPost(ctx, field.Selections, res)
+	return ec.marshalOPost2ᚖgithubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdomainᚐPost(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Query_getPost(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Query_post(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Query",
 		Field:      field,
@@ -1973,8 +1987,8 @@ func (ec *executionContext) fieldContext_Query_getPost(ctx context.Context, fiel
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Post_id(ctx, field)
-			case "authorId":
-				return ec.fieldContext_Post_authorId(ctx, field)
+			case "author":
+				return ec.fieldContext_Post_author(ctx, field)
 			case "text":
 				return ec.fieldContext_Post_text(ctx, field)
 			case "createdAt":
@@ -1994,15 +2008,15 @@ func (ec *executionContext) fieldContext_Query_getPost(ctx context.Context, fiel
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_getPost_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Query_post_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
 	return fc, nil
 }
 
-func (ec *executionContext) _Query_getUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_getUser(ctx, field)
+func (ec *executionContext) _Query_user(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_user(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -2015,7 +2029,7 @@ func (ec *executionContext) _Query_getUser(ctx context.Context, field graphql.Co
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetUser(rctx, fc.Args["id"].(string))
+		return ec.resolvers.Query().User(rctx, fc.Args["id"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2024,12 +2038,12 @@ func (ec *executionContext) _Query_getUser(ctx context.Context, field graphql.Co
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*model.User)
+	res := resTmp.(*domain.User)
 	fc.Result = res
-	return ec.marshalOUser2ᚖgithubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdeliveryᚋgraphqlᚋmodelᚐUser(ctx, field.Selections, res)
+	return ec.marshalOUser2ᚖgithubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdomainᚐUser(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Query_getUser(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Query_user(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Query",
 		Field:      field,
@@ -2060,7 +2074,7 @@ func (ec *executionContext) fieldContext_Query_getUser(ctx context.Context, fiel
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_getUser_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Query_user_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -2196,7 +2210,7 @@ func (ec *executionContext) fieldContext_Query___schema(ctx context.Context, fie
 	return fc, nil
 }
 
-func (ec *executionContext) _Tokens_access(ctx context.Context, field graphql.CollectedField, obj *model.Tokens) (ret graphql.Marshaler) {
+func (ec *executionContext) _Tokens_access(ctx context.Context, field graphql.CollectedField, obj *domain.Tokens) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Tokens_access(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -2240,7 +2254,7 @@ func (ec *executionContext) fieldContext_Tokens_access(ctx context.Context, fiel
 	return fc, nil
 }
 
-func (ec *executionContext) _Tokens_refresh(ctx context.Context, field graphql.CollectedField, obj *model.Tokens) (ret graphql.Marshaler) {
+func (ec *executionContext) _Tokens_refresh(ctx context.Context, field graphql.CollectedField, obj *domain.Tokens) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Tokens_refresh(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -2284,7 +2298,7 @@ func (ec *executionContext) fieldContext_Tokens_refresh(ctx context.Context, fie
 	return fc, nil
 }
 
-func (ec *executionContext) _User_id(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+func (ec *executionContext) _User_id(ctx context.Context, field graphql.CollectedField, obj *domain.User) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_User_id(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -2328,7 +2342,7 @@ func (ec *executionContext) fieldContext_User_id(ctx context.Context, field grap
 	return fc, nil
 }
 
-func (ec *executionContext) _User_username(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+func (ec *executionContext) _User_username(ctx context.Context, field graphql.CollectedField, obj *domain.User) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_User_username(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -2372,7 +2386,7 @@ func (ec *executionContext) fieldContext_User_username(ctx context.Context, fiel
 	return fc, nil
 }
 
-func (ec *executionContext) _User_createdAt(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+func (ec *executionContext) _User_createdAt(ctx context.Context, field graphql.CollectedField, obj *domain.User) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_User_createdAt(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -2416,7 +2430,7 @@ func (ec *executionContext) fieldContext_User_createdAt(ctx context.Context, fie
 	return fc, nil
 }
 
-func (ec *executionContext) _User_lastVisit(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+func (ec *executionContext) _User_lastVisit(ctx context.Context, field graphql.CollectedField, obj *domain.User) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_User_lastVisit(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -2460,7 +2474,7 @@ func (ec *executionContext) fieldContext_User_lastVisit(ctx context.Context, fie
 	return fc, nil
 }
 
-func (ec *executionContext) _User_verified(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+func (ec *executionContext) _User_verified(ctx context.Context, field graphql.CollectedField, obj *domain.User) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_User_verified(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -2504,7 +2518,7 @@ func (ec *executionContext) fieldContext_User_verified(ctx context.Context, fiel
 	return fc, nil
 }
 
-func (ec *executionContext) _User_avatarUrl(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+func (ec *executionContext) _User_avatarUrl(ctx context.Context, field graphql.CollectedField, obj *domain.User) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_User_avatarUrl(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -4318,8 +4332,8 @@ func (ec *executionContext) fieldContext___Type_specifiedByURL(ctx context.Conte
 
 // region    **************************** input.gotpl *****************************
 
-func (ec *executionContext) unmarshalInputCreatePostInput(ctx context.Context, obj interface{}) (model.CreatePostInput, error) {
-	var it model.CreatePostInput
+func (ec *executionContext) unmarshalInputCreatePostInput(ctx context.Context, obj interface{}) (domain.CreatePostInput, error) {
+	var it domain.CreatePostInput
 	asMap := map[string]interface{}{}
 	for k, v := range obj.(map[string]interface{}) {
 		asMap[k] = v
@@ -4339,7 +4353,7 @@ func (ec *executionContext) unmarshalInputCreatePostInput(ctx context.Context, o
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("attachments"))
-			it.Attachments, err = ec.unmarshalOUploadFile2ᚕᚖgithubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdeliveryᚋgraphqlᚋmodelᚐUploadFileᚄ(ctx, v)
+			it.Attachments, err = ec.unmarshalOUploadFile2ᚕᚖgithubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdomainᚐUploadFileᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -4349,8 +4363,8 @@ func (ec *executionContext) unmarshalInputCreatePostInput(ctx context.Context, o
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputForgotPasswordInput(ctx context.Context, obj interface{}) (model.ForgotPasswordInput, error) {
-	var it model.ForgotPasswordInput
+func (ec *executionContext) unmarshalInputForgotPasswordInput(ctx context.Context, obj interface{}) (domain.ForgotPasswordInput, error) {
+	var it domain.ForgotPasswordInput
 	asMap := map[string]interface{}{}
 	for k, v := range obj.(map[string]interface{}) {
 		asMap[k] = v
@@ -4388,8 +4402,8 @@ func (ec *executionContext) unmarshalInputForgotPasswordInput(ctx context.Contex
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputRefreshTokenInput(ctx context.Context, obj interface{}) (model.RefreshTokenInput, error) {
-	var it model.RefreshTokenInput
+func (ec *executionContext) unmarshalInputRefreshTokenInput(ctx context.Context, obj interface{}) (domain.RefreshTokenInput, error) {
+	var it domain.RefreshTokenInput
 	asMap := map[string]interface{}{}
 	for k, v := range obj.(map[string]interface{}) {
 		asMap[k] = v
@@ -4411,8 +4425,8 @@ func (ec *executionContext) unmarshalInputRefreshTokenInput(ctx context.Context,
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputSignInInput(ctx context.Context, obj interface{}) (model.SignInInput, error) {
-	var it model.SignInInput
+func (ec *executionContext) unmarshalInputSignInInput(ctx context.Context, obj interface{}) (domain.SignInInput, error) {
+	var it domain.SignInInput
 	asMap := map[string]interface{}{}
 	for k, v := range obj.(map[string]interface{}) {
 		asMap[k] = v
@@ -4442,8 +4456,8 @@ func (ec *executionContext) unmarshalInputSignInInput(ctx context.Context, obj i
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputSignUpInput(ctx context.Context, obj interface{}) (model.SignUpInput, error) {
-	var it model.SignUpInput
+func (ec *executionContext) unmarshalInputSignUpInput(ctx context.Context, obj interface{}) (domain.SignUpInput, error) {
+	var it domain.SignUpInput
 	asMap := map[string]interface{}{}
 	for k, v := range obj.(map[string]interface{}) {
 		asMap[k] = v
@@ -4489,8 +4503,8 @@ func (ec *executionContext) unmarshalInputSignUpInput(ctx context.Context, obj i
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputUpdatePostInput(ctx context.Context, obj interface{}) (model.UpdatePostInput, error) {
-	var it model.UpdatePostInput
+func (ec *executionContext) unmarshalInputUpdatePostInput(ctx context.Context, obj interface{}) (domain.UpdatePostInput, error) {
+	var it domain.UpdatePostInput
 	asMap := map[string]interface{}{}
 	for k, v := range obj.(map[string]interface{}) {
 		asMap[k] = v
@@ -4520,8 +4534,8 @@ func (ec *executionContext) unmarshalInputUpdatePostInput(ctx context.Context, o
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputUploadFile(ctx context.Context, obj interface{}) (model.UploadFile, error) {
-	var it model.UploadFile
+func (ec *executionContext) unmarshalInputUploadFile(ctx context.Context, obj interface{}) (domain.UploadFile, error) {
+	var it domain.UploadFile
 	asMap := map[string]interface{}{}
 	for k, v := range obj.(map[string]interface{}) {
 		asMap[k] = v
@@ -4555,20 +4569,20 @@ func (ec *executionContext) unmarshalInputUploadFile(ctx context.Context, obj in
 
 // region    ************************** interface.gotpl ***************************
 
-func (ec *executionContext) _Node(ctx context.Context, sel ast.SelectionSet, obj model.Node) graphql.Marshaler {
+func (ec *executionContext) _Node(ctx context.Context, sel ast.SelectionSet, obj domain.Node) graphql.Marshaler {
 	switch obj := (obj).(type) {
 	case nil:
 		return graphql.Null
-	case model.Post:
+	case domain.Post:
 		return ec._Post(ctx, sel, &obj)
-	case *model.Post:
+	case *domain.Post:
 		if obj == nil {
 			return graphql.Null
 		}
 		return ec._Post(ctx, sel, obj)
-	case model.User:
+	case domain.User:
 		return ec._User(ctx, sel, &obj)
-	case *model.User:
+	case *domain.User:
 		if obj == nil {
 			return graphql.Null
 		}
@@ -4704,7 +4718,7 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 
 var postImplementors = []string{"Post", "Node"}
 
-func (ec *executionContext) _Post(ctx context.Context, sel ast.SelectionSet, obj *model.Post) graphql.Marshaler {
+func (ec *executionContext) _Post(ctx context.Context, sel ast.SelectionSet, obj *domain.Post) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, postImplementors)
 	out := graphql.NewFieldSet(fields)
 	var invalids uint32
@@ -4719,9 +4733,9 @@ func (ec *executionContext) _Post(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "authorId":
+		case "author":
 
-			out.Values[i] = ec._Post_authorId(ctx, field, obj)
+			out.Values[i] = ec._Post_author(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				invalids++
@@ -4778,7 +4792,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Query")
-		case "getPost":
+		case "post":
 			field := field
 
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -4787,7 +4801,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_getPost(ctx, field)
+				res = ec._Query_post(ctx, field)
 				return res
 			}
 
@@ -4798,7 +4812,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Concurrently(i, func() graphql.Marshaler {
 				return rrm(innerCtx)
 			})
-		case "getUser":
+		case "user":
 			field := field
 
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -4807,7 +4821,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_getUser(ctx, field)
+				res = ec._Query_user(ctx, field)
 				return res
 			}
 
@@ -4843,7 +4857,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 
 var tokensImplementors = []string{"Tokens"}
 
-func (ec *executionContext) _Tokens(ctx context.Context, sel ast.SelectionSet, obj *model.Tokens) graphql.Marshaler {
+func (ec *executionContext) _Tokens(ctx context.Context, sel ast.SelectionSet, obj *domain.Tokens) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, tokensImplementors)
 	out := graphql.NewFieldSet(fields)
 	var invalids uint32
@@ -4878,7 +4892,7 @@ func (ec *executionContext) _Tokens(ctx context.Context, sel ast.SelectionSet, o
 
 var userImplementors = []string{"User", "Node"}
 
-func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj *model.User) graphql.Marshaler {
+func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj *domain.User) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, userImplementors)
 	out := graphql.NewFieldSet(fields)
 	var invalids uint32
@@ -5269,12 +5283,12 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
-func (ec *executionContext) unmarshalNCreatePostInput2githubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdeliveryᚋgraphqlᚋmodelᚐCreatePostInput(ctx context.Context, v interface{}) (model.CreatePostInput, error) {
+func (ec *executionContext) unmarshalNCreatePostInput2githubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdomainᚐCreatePostInput(ctx context.Context, v interface{}) (domain.CreatePostInput, error) {
 	res, err := ec.unmarshalInputCreatePostInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNForgotPasswordInput2githubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdeliveryᚋgraphqlᚋmodelᚐForgotPasswordInput(ctx context.Context, v interface{}) (model.ForgotPasswordInput, error) {
+func (ec *executionContext) unmarshalNForgotPasswordInput2githubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdomainᚐForgotPasswordInput(ctx context.Context, v interface{}) (domain.ForgotPasswordInput, error) {
 	res, err := ec.unmarshalInputForgotPasswordInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
@@ -5309,17 +5323,17 @@ func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.Selecti
 	return res
 }
 
-func (ec *executionContext) unmarshalNRefreshTokenInput2githubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdeliveryᚋgraphqlᚋmodelᚐRefreshTokenInput(ctx context.Context, v interface{}) (model.RefreshTokenInput, error) {
+func (ec *executionContext) unmarshalNRefreshTokenInput2githubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdomainᚐRefreshTokenInput(ctx context.Context, v interface{}) (domain.RefreshTokenInput, error) {
 	res, err := ec.unmarshalInputRefreshTokenInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNSignInInput2githubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdeliveryᚋgraphqlᚋmodelᚐSignInInput(ctx context.Context, v interface{}) (model.SignInInput, error) {
+func (ec *executionContext) unmarshalNSignInInput2githubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdomainᚐSignInInput(ctx context.Context, v interface{}) (domain.SignInInput, error) {
 	res, err := ec.unmarshalInputSignInInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNSignUpInput2githubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdeliveryᚋgraphqlᚋmodelᚐSignUpInput(ctx context.Context, v interface{}) (model.SignUpInput, error) {
+func (ec *executionContext) unmarshalNSignUpInput2githubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdomainᚐSignUpInput(ctx context.Context, v interface{}) (domain.SignUpInput, error) {
 	res, err := ec.unmarshalInputSignUpInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
@@ -5354,11 +5368,11 @@ func (ec *executionContext) marshalNTimestamp2timeᚐTime(ctx context.Context, s
 	return res
 }
 
-func (ec *executionContext) marshalNTokens2githubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdeliveryᚋgraphqlᚋmodelᚐTokens(ctx context.Context, sel ast.SelectionSet, v model.Tokens) graphql.Marshaler {
+func (ec *executionContext) marshalNTokens2githubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdomainᚐTokens(ctx context.Context, sel ast.SelectionSet, v domain.Tokens) graphql.Marshaler {
 	return ec._Tokens(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNTokens2ᚖgithubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdeliveryᚋgraphqlᚋmodelᚐTokens(ctx context.Context, sel ast.SelectionSet, v *model.Tokens) graphql.Marshaler {
+func (ec *executionContext) marshalNTokens2ᚖgithubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdomainᚐTokens(ctx context.Context, sel ast.SelectionSet, v *domain.Tokens) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -5383,7 +5397,7 @@ func (ec *executionContext) marshalNUint642uint64(ctx context.Context, sel ast.S
 	return res
 }
 
-func (ec *executionContext) unmarshalNUpdatePostInput2githubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdeliveryᚋgraphqlᚋmodelᚐUpdatePostInput(ctx context.Context, v interface{}) (model.UpdatePostInput, error) {
+func (ec *executionContext) unmarshalNUpdatePostInput2githubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdomainᚐUpdatePostInput(ctx context.Context, v interface{}) (domain.UpdatePostInput, error) {
 	res, err := ec.unmarshalInputUpdatePostInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
@@ -5403,9 +5417,19 @@ func (ec *executionContext) marshalNUpload2githubᚗcomᚋ99designsᚋgqlgenᚋg
 	return res
 }
 
-func (ec *executionContext) unmarshalNUploadFile2ᚖgithubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdeliveryᚋgraphqlᚋmodelᚐUploadFile(ctx context.Context, v interface{}) (*model.UploadFile, error) {
+func (ec *executionContext) unmarshalNUploadFile2ᚖgithubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdomainᚐUploadFile(ctx context.Context, v interface{}) (*domain.UploadFile, error) {
 	res, err := ec.unmarshalInputUploadFile(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNUser2ᚖgithubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdomainᚐUser(ctx context.Context, sel ast.SelectionSet, v *domain.User) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._User(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {
@@ -5687,7 +5711,7 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return res
 }
 
-func (ec *executionContext) marshalOPost2ᚖgithubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdeliveryᚋgraphqlᚋmodelᚐPost(ctx context.Context, sel ast.SelectionSet, v *model.Post) graphql.Marshaler {
+func (ec *executionContext) marshalOPost2ᚖgithubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdomainᚐPost(ctx context.Context, sel ast.SelectionSet, v *domain.Post) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -5764,7 +5788,7 @@ func (ec *executionContext) marshalOTimestamp2ᚖtimeᚐTime(ctx context.Context
 	return res
 }
 
-func (ec *executionContext) unmarshalOUploadFile2ᚕᚖgithubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdeliveryᚋgraphqlᚋmodelᚐUploadFileᚄ(ctx context.Context, v interface{}) ([]*model.UploadFile, error) {
+func (ec *executionContext) unmarshalOUploadFile2ᚕᚖgithubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdomainᚐUploadFileᚄ(ctx context.Context, v interface{}) ([]*domain.UploadFile, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -5773,10 +5797,10 @@ func (ec *executionContext) unmarshalOUploadFile2ᚕᚖgithubᚗcomᚋdurudexᚋ
 		vSlice = graphql.CoerceList(v)
 	}
 	var err error
-	res := make([]*model.UploadFile, len(vSlice))
+	res := make([]*domain.UploadFile, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNUploadFile2ᚖgithubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdeliveryᚋgraphqlᚋmodelᚐUploadFile(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNUploadFile2ᚖgithubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdomainᚐUploadFile(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
@@ -5784,7 +5808,7 @@ func (ec *executionContext) unmarshalOUploadFile2ᚕᚖgithubᚗcomᚋdurudexᚋ
 	return res, nil
 }
 
-func (ec *executionContext) marshalOUser2ᚖgithubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdeliveryᚋgraphqlᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v *model.User) graphql.Marshaler {
+func (ec *executionContext) marshalOUser2ᚖgithubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdomainᚐUser(ctx context.Context, sel ast.SelectionSet, v *domain.User) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}

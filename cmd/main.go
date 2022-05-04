@@ -12,6 +12,7 @@ import (
 	"os"
 
 	"github.com/durudex/durudex-test-api/internal/delivery/http"
+	"github.com/durudex/durudex-test-api/internal/service"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -19,7 +20,8 @@ import (
 func main() {
 	app := fiber.New(fiber.Config{})
 
-	handler := http.NewHandler()
+	service := service.NewService()
+	handler := http.NewHandler(service)
 
 	handler.InitRoutes(app)
 

@@ -11,8 +11,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/durudex/durudex-test-api/internal/delivery/http"
 	"github.com/durudex/durudex-test-api/internal/service"
+	"github.com/durudex/durudex-test-api/internal/transport/http"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -27,7 +27,7 @@ func main() {
 
 	port := os.Getenv("API_PORT")
 
-	log.Printf("Server is runned it ':%s'", port)
+	log.Printf("Server is run it ':%s'", port)
 
 	if err := app.Listen(":" + port); err != nil {
 		log.Fatalf("error running http server: %s", err.Error())

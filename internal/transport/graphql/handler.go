@@ -10,9 +10,9 @@ package graphql
 import (
 	"net/http"
 
-	"github.com/durudex/durudex-test-api/internal/delivery/graphql/generated"
-	"github.com/durudex/durudex-test-api/internal/delivery/graphql/resolver"
 	"github.com/durudex/durudex-test-api/internal/service"
+	"github.com/durudex/durudex-test-api/internal/transport/graphql/generated"
+	"github.com/durudex/durudex-test-api/internal/transport/graphql/resolver"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"

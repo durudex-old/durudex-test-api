@@ -39,10 +39,3 @@ If you want to say thank you and/or support the active development of [Durudex](
 
 ## ⚠️ License
 Copyright © 2022 [Durudex](https://github.com/durudex). Released under the MIT license.
-
-#### Third-party library licenses
-+ [gqlgen](https://github.com/99designs/gqlgen/blob/master/LICENSE)
-+ [gqlparser](https://github.com/vektah/gqlparser/blob/master/LICENSE)
-+ [faker](https://github.com/bxcodec/faker/blob/master/LICENSE)
-+ [fiber](https://github.com/gofiber/fiber/blob/master/LICENSE)
-+ [adaptor](https://github.com/gofiber/adaptor/blob/master/LICENSE)

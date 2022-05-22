@@ -8,8 +8,8 @@
 package http
 
 import (
-	"github.com/durudex/durudex-test-api/internal/delivery/graphql"
 	"github.com/durudex/durudex-test-api/internal/service"
+	"github.com/durudex/durudex-test-api/internal/transport/graphql"
 
 	"github.com/gofiber/adaptor/v2"
 	"github.com/gofiber/fiber/v2"
@@ -29,9 +29,11 @@ func (h *Handler) InitRoutes(router fiber.Router) {
 		return ctx.SendString("pong")
 	})
 
+	// Creating a new graphql handler.
 	graphql := graphql.NewHandler(h.service)
 
 	router.Use(h.authMiddleware)
+
 	router.Get("/", adaptor.HTTPHandlerFunc(graphql.PlaygroundHandler()))
 	router.Post("/query", adaptor.HTTPHandlerFunc(graphql.GraphqlHandler()))
 }

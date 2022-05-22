@@ -11,6 +11,14 @@ build:
 run: build
 	docker-compose up --remove-orphans app
 
+.PHONY: lint
+lint:
+	golangci-lint run
+
+.PHONY: test
+test: lint
+	go test -v ./...
+
 .PHONY: gqlgen
 gqlgen:
 	go get -d github.com/99designs/gqlgen

@@ -7,7 +7,7 @@ version: '3.8'
 
 services:
   api:
-    image: v1def/durudex-test-api:latest
+    image: durudex/durudex-test-api:latest
     container_name: durudex-test-api
     restart: always
     hostname: api.durudex.local

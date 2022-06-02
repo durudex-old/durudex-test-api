@@ -9,10 +9,6 @@ import (
 	"github.com/durudex/durudex-test-api/internal/domain"
 )
 
-func (r *mutationResolver) SignUp(ctx context.Context, input domain.SignUpInput) (string, error) {
-	return r.service.Auth.SignUp(ctx, input)
-}
-
 func (r *mutationResolver) SignIn(ctx context.Context, input domain.SignInInput) (*domain.Tokens, error) {
 	return r.service.Auth.SignIn(ctx, input)
 }

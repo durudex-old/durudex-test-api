@@ -7,18 +7,12 @@
 
 package domain
 
+import "github.com/vektah/gqlparser/v2/gqlerror"
+
 // Authorization tokens.
 type Tokens struct {
 	Access  string `json:"access"`
 	Refresh string `json:"refresh"`
-}
-
-// User Sign Up input.
-type SignUpInput struct {
-	Username string `json:"username"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
-	Code     uint64 `json:"code"`
 }
 
 // User Sign In input.
@@ -28,8 +22,42 @@ type SignInInput struct {
 	IP       string
 }
 
+// Validate user sign in input.
+func (i SignInInput) Validate() error {
+	switch {
+	case !RxUsername.MatchString(i.Username):
+		// Return invalid username graphql error.
+		return &gqlerror.Error{
+			Message:    "Invalid Username",
+			Extensions: map[string]interface{}{"code": CodeInvalidArgument},
+		}
+	case !RxPassword.MatchString(i.Password):
+		// Return invalid password graphql error.
+		return &gqlerror.Error{
+			Message:    "Invalid Password",
+			Extensions: map[string]interface{}{"code": CodeInvalidArgument},
+		}
+	default:
+		return nil
+	}
+}
+
 // Refresh tokens input.
 type RefreshTokenInput struct {
 	Token string `json:"token"`
 	IP    string
+}
+
+// Validate refresh tokens input.
+func (i RefreshTokenInput) Validate() error {
+	switch {
+	case i.Token == "":
+		// Return invalid token graphql error.
+		return &gqlerror.Error{
+			Message:    "Invalid Access Token",
+			Extensions: map[string]interface{}{"code": CodeInvalidArgument},
+		}
+	default:
+		return nil
+	}
 }

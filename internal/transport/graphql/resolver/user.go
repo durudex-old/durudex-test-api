@@ -11,7 +11,7 @@ import (
 )
 
 func (r *mutationResolver) SignUp(ctx context.Context, input domain.SignUpInput) (string, error) {
-	return r.service.Auth.SignUp(ctx, input)
+	return r.service.User.SignUp(ctx, input)
 }
 
 func (r *mutationResolver) CreateVerifyEmailCode(ctx context.Context, email string) (bool, error) {

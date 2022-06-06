@@ -13,10 +13,13 @@ import (
 	"github.com/durudex/durudex-test-api/internal/domain"
 
 	"github.com/99designs/gqlgen/graphql"
+	faker "github.com/bxcodec/faker/v3"
+	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
 // User service interface.
 type User interface {
+	SignUp(ctx context.Context, input domain.SignUpInput) (string, error)
 	CreateVerifyEmailCode(ctx context.Context, email string) (bool, error)
 	ForgotPassword(ctx context.Context, input domain.ForgotPasswordInput) (bool, error)
 	UpdateAvatar(ctx context.Context, file graphql.Upload) (string, error)
@@ -31,13 +34,36 @@ func NewUserService() *UserService {
 	return &UserService{}
 }
 
+// User Sign Up.
+func (s *UserService) SignUp(ctx context.Context, input domain.SignUpInput) (string, error) {
+	// Validate input.
+	if err := input.Validate(); err != nil {
+		return "", err
+	}
+
+	return faker.UUIDHyphenated(), nil
+}
+
 // Creating a new user verification email code.
 func (s *UserService) CreateVerifyEmailCode(ctx context.Context, email string) (bool, error) {
+	if !domain.RxEmail.MatchString(email) {
+		// Return invalid email graphql error.
+		return false, &gqlerror.Error{
+			Message:    "Invalid Email",
+			Extensions: map[string]interface{}{"code": domain.CodeInvalidArgument},
+		}
+	}
+
 	return true, nil
 }
 
 // Forgot user password.
 func (s *UserService) ForgotPassword(ctx context.Context, input domain.ForgotPasswordInput) (bool, error) {
+	// Validate input.
+	if err := input.Validate(); err != nil {
+		return false, err
+	}
+
 	return true, nil
 }
 

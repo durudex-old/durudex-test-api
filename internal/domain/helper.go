@@ -28,7 +28,7 @@ func NewOptionalString(s string) *string {
 
 // Creating a new random optional array of attachments url.
 func NewRandomAttachmentsURLArray(num int) []string {
-	var images []string
+	images := make([]string, num)
 
 	url := "https://cdn.durudex.com/attachments/" + faker.UUIDHyphenated() + "/"
 

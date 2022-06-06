@@ -16,7 +16,6 @@ import (
 
 // Auth service interface.
 type Auth interface {
-	SignUp(ctx context.Context, input domain.SignUpInput) (string, error)
 	SignIn(ctx context.Context, input domain.SignInInput) (*domain.Tokens, error)
 	SignOut(ctx context.Context, input domain.RefreshTokenInput) (bool, error)
 	RefreshToken(ctx context.Context, input domain.RefreshTokenInput) (string, error)
@@ -30,22 +29,32 @@ func NewAuthService() *AuthService {
 	return &AuthService{}
 }
 
-// User Sign Up.
-func (s *AuthService) SignUp(ctx context.Context, input domain.SignUpInput) (string, error) {
-	return faker.UUIDHyphenated(), nil
-}
-
 // User Sign In.
 func (s *AuthService) SignIn(ctx context.Context, input domain.SignInInput) (*domain.Tokens, error) {
+	// Validate input.
+	if err := input.Validate(); err != nil {
+		return nil, err
+	}
+
 	return &domain.Tokens{Access: faker.Jwt(), Refresh: faker.Password()}, nil
 }
 
 // User Sign Out.
 func (s *AuthService) SignOut(ctx context.Context, input domain.RefreshTokenInput) (bool, error) {
+	// Validate input.
+	if err := input.Validate(); err != nil {
+		return false, err
+	}
+
 	return true, nil
 }
 
 // Refresh user access token token.
 func (s *AuthService) RefreshToken(ctx context.Context, input domain.RefreshTokenInput) (string, error) {
+	// Validate input.
+	if err := input.Validate(); err != nil {
+		return "", err
+	}
+
 	return faker.Jwt(), nil
 }

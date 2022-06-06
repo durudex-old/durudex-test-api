@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/bxcodec/faker/v3"
+	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
 // User structure.
@@ -38,9 +39,69 @@ func NewUser(id string) *User {
 
 func (User) IsNode() {}
 
+// User Sign Up input.
+type SignUpInput struct {
+	Username string `json:"username"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+	Code     uint64 `json:"code"`
+}
+
+// Validate user sign up input.
+func (i SignUpInput) Validate() error {
+	switch {
+	case !RxUsername.MatchString(i.Username):
+		// Return invalid username graphql error.
+		return &gqlerror.Error{
+			Message:    "Invalid Username",
+			Extensions: map[string]interface{}{"code": CodeInvalidArgument},
+		}
+	case !RxPassword.MatchString(i.Password):
+		// Return invalid password graphql error.
+		return &gqlerror.Error{
+			Message:    "Invalid Password",
+			Extensions: map[string]interface{}{"code": CodeInvalidArgument},
+		}
+	case !RxEmail.MatchString(i.Email):
+		// Return invalid email graphql error.
+		return &gqlerror.Error{
+			Message:    "Invalid Email",
+			Extensions: map[string]interface{}{"code": CodeInvalidArgument},
+		}
+	case i.Code == 0:
+		// Return invalid code graphql error.
+		return &gqlerror.Error{
+			Message:    "Invalid Code",
+			Extensions: map[string]interface{}{"code": CodeInvalidArgument},
+		}
+	default:
+		return nil
+	}
+}
+
 // User forgot password input.
 type ForgotPasswordInput struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 	Code     uint64 `json:"code"`
+}
+
+// Validate user forgot password input.
+func (i ForgotPasswordInput) Validate() error {
+	switch {
+	case !RxEmail.MatchString(i.Email):
+		// Return invalid email graphql error.
+		return &gqlerror.Error{
+			Message:    "Invalid Email",
+			Extensions: map[string]interface{}{"code": CodeInvalidArgument},
+		}
+	case !RxPassword.MatchString(i.Password):
+		// Return invalid password graphql error.
+		return &gqlerror.Error{
+			Message:    "Invalid Password",
+			Extensions: map[string]interface{}{"code": CodeInvalidArgument},
+		}
+	default:
+		return nil
+	}
 }

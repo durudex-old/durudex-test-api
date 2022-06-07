@@ -74,5 +74,12 @@ func (s *UserService) UpdateAvatar(ctx context.Context, file graphql.Upload) (st
 
 // Getting a user.
 func (s *UserService) User(ctx context.Context, id string) (*domain.User, error) {
+	if id == "00000000-0000-0000-0000-000000000000" {
+		return nil, &gqlerror.Error{
+			Message:    "User not found",
+			Extensions: map[string]interface{}{"code": domain.CodeNotFound},
+		}
+	}
+
 	return domain.NewUser(id), nil
 }

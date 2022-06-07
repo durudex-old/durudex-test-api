@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/bxcodec/faker/v3"
+	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
 // Post type.
@@ -45,8 +46,32 @@ type CreatePostInput struct {
 	Attachments []*UploadFile
 }
 
+// Validate create post input.
+func (i CreatePostInput) Validate() error {
+	if len(i.Text) > 500 {
+		return &gqlerror.Error{
+			Message:    "Text is too long",
+			Extensions: map[string]interface{}{"code": CodeInvalidArgument},
+		}
+	}
+
+	return nil
+}
+
 // Update post input.
 type UpdatePostInput struct {
 	ID   string `json:"id"`
 	Text string `json:"text"`
+}
+
+// Validate update post input.
+func (i UpdatePostInput) Validate() error {
+	if len(i.Text) > 500 {
+		return &gqlerror.Error{
+			Message:    "Text is too long",
+			Extensions: map[string]interface{}{"code": CodeInvalidArgument},
+		}
+	}
+
+	return nil
 }

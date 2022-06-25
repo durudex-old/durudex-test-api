@@ -7,8 +7,8 @@ version: '3.8'
 
 services:
   app:
-    image: 'durudex-test-api:latest'
-    container_name: durudex-test-api
+    image: 'durudex/durudex-test-api:latest'
+    container_name: durudex/durudex-test-api
     restart: always
     ports:
       - 8000:8000

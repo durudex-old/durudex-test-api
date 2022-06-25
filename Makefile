@@ -5,7 +5,7 @@
 
 .PHONY: build
 build:
-	docker build -t durudex-test-api .
+	docker build -t durudex/durudex-test-api .
 
 .PHONY: run
 run: build

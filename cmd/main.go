@@ -15,10 +15,17 @@ import (
 	"github.com/durudex/durudex-test-api/internal/transport/http"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 )
 
 func main() {
 	app := fiber.New(fiber.Config{})
+
+	app.Use(cors.New(cors.Config{
+		AllowOrigins: "*",
+		AllowMethods: "*",
+		AllowHeaders: "*",
+	}))
 
 	service := service.NewService()
 	handler := http.NewHandler(service)

@@ -16,6 +16,7 @@ import (
 
 // Auth service interface.
 type Auth interface {
+	SignUp(ctx context.Context, input domain.SignUpInput) (*domain.Tokens, error)
 	SignIn(ctx context.Context, input domain.SignInInput) (*domain.Tokens, error)
 	SignOut(ctx context.Context, input domain.RefreshTokenInput) (bool, error)
 	RefreshToken(ctx context.Context, input domain.RefreshTokenInput) (string, error)
@@ -27,6 +28,16 @@ type AuthService struct{}
 // Creating a new auth service.
 func NewAuthService() *AuthService {
 	return &AuthService{}
+}
+
+// User Sign Up.
+func (s *AuthService) SignUp(ctx context.Context, input domain.SignUpInput) (*domain.Tokens, error) {
+	// Validate input.
+	if err := input.Validate(); err != nil {
+		return nil, err
+	}
+
+	return &domain.Tokens{Access: faker.Jwt(), Refresh: faker.Password()}, nil
 }
 
 // User Sign In.

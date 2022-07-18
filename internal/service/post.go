@@ -12,7 +12,7 @@ import (
 
 	"github.com/durudex/durudex-test-api/internal/domain"
 
-	faker "github.com/bxcodec/faker/v3"
+	"github.com/segmentio/ksuid"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
@@ -39,12 +39,12 @@ func (s *PostService) CreatePost(ctx context.Context, input domain.CreatePostInp
 		return "", err
 	}
 
-	return faker.UUIDHyphenated(), nil
+	return ksuid.New().String(), nil
 }
 
 // Deleting a post.
 func (s *PostService) DeletePost(ctx context.Context, id string) (bool, error) {
-	if id == "00000000-0000-0000-0000-000000000000" {
+	if id == "0" {
 		return false, &gqlerror.Error{
 			Message:    "Post not found",
 			Extensions: map[string]interface{}{"code": domain.CodeNotFound},
@@ -66,7 +66,7 @@ func (s *PostService) UpdatePost(ctx context.Context, input domain.UpdatePostInp
 
 // Getting a post.
 func (s *PostService) Post(ctx context.Context, id string) (*domain.Post, error) {
-	if id == "00000000-0000-0000-0000-000000000000" {
+	if id == "0" {
 		return nil, &gqlerror.Error{
 			Message:    "Post not found",
 			Extensions: map[string]interface{}{"code": domain.CodeNotFound},

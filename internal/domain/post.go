@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/bxcodec/faker/v3"
+	"github.com/segmentio/ksuid"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
@@ -20,7 +21,6 @@ type Post struct {
 	ID          string     `json:"id"`
 	Author      *User      `json:"author"`
 	Text        string     `json:"text"`
-	CreatedAt   time.Time  `json:"createdAt"`
 	UpdatedAt   *time.Time `json:"updatedAt"`
 	Attachments []string   `json:"attachments"`
 }
@@ -29,9 +29,8 @@ type Post struct {
 func NewPost(id string) *Post {
 	return &Post{
 		ID:          id,
-		Author:      NewUser(faker.UUIDHyphenated()),
+		Author:      NewUser(ksuid.New().String()),
 		Text:        faker.Sentence(),
-		CreatedAt:   time.Unix(faker.RandomUnixTime(), 0),
 		UpdatedAt:   NewOptionalTime(),
 		Attachments: NewRandomAttachmentsURLArray(rand.Intn(5)),
 	}

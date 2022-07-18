@@ -19,7 +19,6 @@ import (
 type User struct {
 	ID        string    `json:"id"`
 	Username  string    `json:"username"`
-	CreatedAt time.Time `json:"createdAt"`
 	LastVisit time.Time `json:"lastVisit"`
 	Verified  bool      `json:"verified"`
 	AvatarURL *string   `json:"avatarUrl"`
@@ -28,12 +27,11 @@ type User struct {
 // Creating a new user.
 func NewUser(id string) *User {
 	return &User{
-		ID:        faker.UUIDHyphenated(),
+		ID:        id,
 		Username:  faker.Username(),
-		CreatedAt: time.Unix(faker.RandomUnixTime(), 0),
 		LastVisit: time.Unix(faker.RandomUnixTime(), 0),
 		Verified:  rand.Intn(2) == 1,
-		AvatarURL: NewOptionalString("https://cdn.durudex.com/avatar/" + faker.UUIDHyphenated() + ".png"),
+		AvatarURL: NewOptionalString("https://cdn.durudex.com/avatar/" + id + ".png"),
 	}
 }
 

@@ -13,13 +13,11 @@ import (
 	"github.com/durudex/durudex-test-api/internal/domain"
 
 	"github.com/99designs/gqlgen/graphql"
-	faker "github.com/bxcodec/faker/v3"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
 // User service interface.
 type User interface {
-	SignUp(ctx context.Context, input domain.SignUpInput) (string, error)
 	CreateVerifyEmailCode(ctx context.Context, email string) (bool, error)
 	ForgotPassword(ctx context.Context, input domain.ForgotPasswordInput) (bool, error)
 	UpdateAvatar(ctx context.Context, file graphql.Upload) (string, error)
@@ -32,16 +30,6 @@ type UserService struct{}
 // Creating a new user service.
 func NewUserService() *UserService {
 	return &UserService{}
-}
-
-// User Sign Up.
-func (s *UserService) SignUp(ctx context.Context, input domain.SignUpInput) (string, error) {
-	// Validate input.
-	if err := input.Validate(); err != nil {
-		return "", err
-	}
-
-	return faker.UUIDHyphenated(), nil
 }
 
 // Creating a new user verification email code.
@@ -74,7 +62,7 @@ func (s *UserService) UpdateAvatar(ctx context.Context, file graphql.Upload) (st
 
 // Getting a user.
 func (s *UserService) User(ctx context.Context, id string) (*domain.User, error) {
-	if id == "00000000-0000-0000-0000-000000000000" {
+	if id == "0" {
 		return nil, &gqlerror.Error{
 			Message:    "User not found",
 			Extensions: map[string]interface{}{"code": domain.CodeNotFound},

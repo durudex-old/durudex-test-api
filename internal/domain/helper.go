@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/bxcodec/faker/v3"
+	"github.com/segmentio/ksuid"
 )
 
 // Creating a new random optional time.
@@ -37,7 +38,7 @@ func NewOptionalString(s string) *string {
 func NewRandomAttachmentsURLArray(num int) []string {
 	images := make([]string, num)
 
-	url := "https://cdn.durudex.com/attachments/" + faker.UUIDHyphenated() + "/"
+	url := "https://cdn.durudex.com/attachments/" + ksuid.New().String() + "/"
 
 	for i := 0; i < num; i++ {
 		images = append(images, url+faker.Word()+".png")

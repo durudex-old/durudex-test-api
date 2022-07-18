@@ -44,6 +44,11 @@ func TestConfig_Init(t *testing.T) {
 				jwtSigningKey: "secret-key",
 			}},
 			want: &config.Config{
+				HTTP: config.HTTPConfig{
+					Host: "api.test.durudex.com",
+					Port: "8000",
+					Name: "Durudex Test API",
+				},
 				Auth: config.AuthConfig{
 					SigningKey: "secret-key",
 					TTL:        time.Minute * 15,

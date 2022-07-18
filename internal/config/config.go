@@ -21,7 +21,17 @@ const defaultConfigPath string = "configs/main"
 
 type (
 	// Config variables.
-	Config struct{ Auth AuthConfig }
+	Config struct {
+		HTTP HTTPConfig
+		Auth AuthConfig
+	}
+
+	// HTTP server config variables.
+	HTTPConfig struct {
+		Host string `mapstructure:"host"`
+		Port string `mapstructure:"port"`
+		Name string `mapstructure:"name"`
+	}
 
 	// Auth config variables.
 	AuthConfig struct {
@@ -79,7 +89,11 @@ func unmarshal(cfg *Config) error {
 	log.Debug().Msg("Unmarshal config keys...")
 
 	// Unmarshal auth keys.
-	return viper.UnmarshalKey("auth", &cfg.Auth)
+	if err := viper.UnmarshalKey("auth", &cfg.Auth); err != nil {
+		return err
+	}
+	// Unmarshal http keys.
+	return viper.UnmarshalKey("http", &cfg.HTTP)
 }
 
 // Set configurations from environment.

@@ -9,46 +9,53 @@ package main
 
 import (
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/durudex/durudex-test-api/internal/config"
 	"github.com/durudex/durudex-test-api/internal/service"
 	"github.com/durudex/durudex-test-api/internal/transport/http"
-	"github.com/rs/zerolog/log"
 
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 )
 
+// Initialize application.
+func init() {
+	// Set logger mode.
+	if os.Getenv("DEBUG") == "true" {
+		zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	} else {
+		zerolog.SetGlobalLevel(zerolog.InfoLevel)
+	}
+}
+
+// A function that running the application.
 func main() {
 	// Initialize config.
 	cfg, err := config.Init()
 	if err != nil {
-		log.Fatal().Err(err).Msg("failed to init config")
+		log.Error().Err(err).Msg("error initialize config")
 	}
-
-	// Crating a new fiber app.
-	app := fiber.New(fiber.Config{})
-
-	// Use cors middleware.
-	app.Use(cors.New(cors.Config{
-		AllowOrigins: "*",
-		AllowMethods: "*",
-		AllowHeaders: "*",
-	}))
 
 	// Creating a new service.
 	service := service.NewService(cfg)
 	// Creating a new http handler.
 	handler := http.NewHandler(service, &cfg.Auth)
 
-	// Initialize http routes.
-	handler.InitRoutes(app)
+	// Create a new server.
+	srv := http.NewServer(&cfg.HTTP, handler)
 
-	port := os.Getenv("API_PORT")
+	// Run server.
+	go srv.Run()
 
-	log.Printf("Server is run it ':%s'", port)
+	// Quit in application.
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
+	<-quit
 
-	if err := app.Listen(":" + port); err != nil {
-		log.Fatal().Err(err).Msg("error running http server")
-	}
+	// Stopping server.
+	srv.Stop()
+
+	log.Info().Msg("Durudex Test API stopping!")
 }

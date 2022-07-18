@@ -14,6 +14,7 @@ import (
 
 	"github.com/gofiber/adaptor/v2"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 )
 
 // HTTP handler structure.
@@ -29,6 +30,19 @@ func NewHandler(service *service.Service, cfg *config.AuthConfig) *Handler {
 
 // Initialize http routes.
 func (h *Handler) InitRoutes(router fiber.Router) {
+	// CORS configuration.
+	corsConfig := cors.Config{
+		AllowOrigins: "*",
+		AllowMethods: "*",
+		AllowHeaders: "*",
+	}
+
+	// Set http middleware.
+	router.Use(
+		cors.New(corsConfig),
+		h.authMiddleware,
+	)
+
 	router.Get("/ping", func(ctx *fiber.Ctx) error {
 		return ctx.SendString("pong")
 	})

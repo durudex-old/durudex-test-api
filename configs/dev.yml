@@ -3,5 +3,10 @@
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
 
+http:
+  host: ""
+  port: 8000
+  name: "Durudex Test API"
+
 auth:
   ttl: 15m

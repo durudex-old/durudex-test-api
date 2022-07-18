@@ -12,5 +12,7 @@ services:
     restart: always
     ports:
       - 8000:8000
+    volumes:
+      - ./configs/:/root/configs/
     env_file:
       - .env

@@ -13,6 +13,8 @@ services:
     hostname: api.durudex.local
     ports:
       - 8000:8000
+    volumes:
+      - ./configs/:/root/configs/
     env_file:
       - .env
     networks:

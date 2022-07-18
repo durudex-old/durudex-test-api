@@ -10,8 +10,11 @@ package service
 import (
 	"context"
 
-	faker "github.com/bxcodec/faker/v3"
+	"github.com/durudex/durudex-test-api/internal/config"
 	"github.com/durudex/durudex-test-api/internal/domain"
+	"github.com/durudex/durudex-test-api/pkg/auth"
+
+	"github.com/segmentio/ksuid"
 )
 
 // Auth service interface.
@@ -20,14 +23,15 @@ type Auth interface {
 	SignIn(ctx context.Context, input domain.SignInInput) (*domain.Tokens, error)
 	SignOut(ctx context.Context, input domain.RefreshTokenInput) (bool, error)
 	RefreshToken(ctx context.Context, input domain.RefreshTokenInput) (string, error)
+	CreateSession() (*domain.Tokens, error)
 }
 
 // Auth service structure.
-type AuthService struct{}
+type AuthService struct{ cfg *config.AuthConfig }
 
 // Creating a new auth service.
-func NewAuthService() *AuthService {
-	return &AuthService{}
+func NewAuthService(cfg *config.AuthConfig) *AuthService {
+	return &AuthService{cfg: cfg}
 }
 
 // User Sign Up.
@@ -37,7 +41,7 @@ func (s *AuthService) SignUp(ctx context.Context, input domain.SignUpInput) (*do
 		return nil, err
 	}
 
-	return &domain.Tokens{Access: faker.Jwt(), Refresh: faker.Password()}, nil
+	return s.CreateSession()
 }
 
 // User Sign In.
@@ -47,7 +51,24 @@ func (s *AuthService) SignIn(ctx context.Context, input domain.SignInInput) (*do
 		return nil, err
 	}
 
-	return &domain.Tokens{Access: faker.Jwt(), Refresh: faker.Password()}, nil
+	return s.CreateSession()
+}
+
+// Creating a new fake user session.
+func (s *AuthService) CreateSession() (*domain.Tokens, error) {
+	// Generating a new jwt access token
+	accessToken, err := auth.GenerateAccessToken(ksuid.New().String(), s.cfg.SigningKey, s.cfg.TTL)
+	if err != nil {
+		return nil, err
+	}
+
+	// Generating a new refresh token.
+	refreshToken, err := auth.GenerateRefreshToken()
+	if err != nil {
+		return nil, err
+	}
+
+	return &domain.Tokens{Access: accessToken, Refresh: refreshToken}, nil
 }
 
 // User Sign Out.
@@ -67,5 +88,5 @@ func (s *AuthService) RefreshToken(ctx context.Context, input domain.RefreshToke
 		return "", err
 	}
 
-	return faker.Jwt(), nil
+	return auth.GenerateAccessToken(ksuid.New().String(), s.cfg.SigningKey, s.cfg.TTL)
 }

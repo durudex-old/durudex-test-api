@@ -8,6 +8,7 @@
 package http
 
 import (
+	"github.com/durudex/durudex-test-api/internal/config"
 	"github.com/durudex/durudex-test-api/internal/service"
 	"github.com/durudex/durudex-test-api/internal/transport/graphql"
 
@@ -16,11 +17,14 @@ import (
 )
 
 // HTTP handler structure.
-type Handler struct{ service *service.Service }
+type Handler struct {
+	service *service.Service
+	cfg     *config.AuthConfig
+}
 
 // Creating a new http handler.
-func NewHandler(service *service.Service) *Handler {
-	return &Handler{service: service}
+func NewHandler(service *service.Service, cfg *config.AuthConfig) *Handler {
+	return &Handler{service: service, cfg: cfg}
 }
 
 // Initialize http routes.

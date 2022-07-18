@@ -7,6 +7,8 @@
 
 package service
 
+import "github.com/durudex/durudex-test-api/internal/config"
+
 // Service structure.
 type Service struct {
 	Auth
@@ -15,9 +17,9 @@ type Service struct {
 }
 
 // Creating a new service.
-func NewService() *Service {
+func NewService(cfg *config.Config) *Service {
 	return &Service{
-		Auth: NewAuthService(),
+		Auth: NewAuthService(&cfg.Auth),
 		User: NewUserService(),
 		Post: NewPostService(),
 	}

@@ -15,6 +15,8 @@ import (
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
+const UserCtx string = "userId"
+
 // User structure.
 type User struct {
 	ID        string    `json:"id"`

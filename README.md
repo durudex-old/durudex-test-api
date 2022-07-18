@@ -26,8 +26,14 @@ Application for testing Durudex API.
 ## ⚙️ Build & Run
 1) Create an `.env` file in the root directory and add the following values from `.env.example`:
 ```env
-# API Configurations:
-API_PORT=8000
+# Debug mode.
+DEBUG=false
+
+# Config variables:
+CONFIG_PATH=configs/main
+
+# Auth variables:
+JWT_SIGNING_KEY=
 ```
 
 Use `make run` to run and `make build` to build project.

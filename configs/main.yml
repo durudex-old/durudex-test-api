@@ -3,14 +3,5 @@
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
 
-# Debug mode.
-DEBUG=false
-
-# Config variables:
-CONFIG_PATH=configs/main
-
-# Auth variables:
-JWT_SIGNING_KEY=
-
-# API Configurations:
-API_PORT=8000
+auth:
+  ttl: 15m

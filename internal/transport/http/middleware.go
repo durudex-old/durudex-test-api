@@ -11,6 +11,9 @@ import (
 	"errors"
 	"strings"
 
+	"github.com/durudex/durudex-test-api/internal/domain"
+	"github.com/durudex/durudex-test-api/pkg/auth"
+
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -32,15 +35,21 @@ func (h *Handler) authMiddleware(ctx *fiber.Ctx) error {
 	// Checking header parts.
 	headerParts := strings.Split(header, " ")
 	if len(headerParts) != 2 || headerParts[0] != "Bearer" {
-		return ErrAuthHeader
+		return ctx.Status(fiber.StatusBadRequest).SendString("Invalid authorization header")
 	}
 
 	// Check the second part of the header.
 	if len(headerParts[1]) == 0 {
-		return ErrAuthTokenIsEmpty
+		return ctx.Status(fiber.StatusBadRequest).SendString("Authorization token is empty")
 	}
 
-	ctx.Context().SetUserValue("auth", true)
+	// Parsing jwt access token.
+	customClaim, err := auth.Parse(headerParts[1], h.cfg.SigningKey)
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).SendString("Authorization token is invalid")
+	}
+
+	ctx.Context().SetUserValue(domain.UserCtx, customClaim)
 
 	return ctx.Next()
 }

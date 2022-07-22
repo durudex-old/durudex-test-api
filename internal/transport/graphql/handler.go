@@ -15,6 +15,7 @@ import (
 	"github.com/durudex/durudex-test-api/internal/transport/graphql/resolver"
 
 	"github.com/99designs/gqlgen/graphql/handler"
+	"github.com/99designs/gqlgen/graphql/handler/extension"
 	"github.com/99designs/gqlgen/graphql/playground"
 )
 
@@ -28,12 +29,31 @@ func NewHandler(service *service.Service) *Handler {
 
 // GraphQL handler.
 func (h *Handler) GraphqlHandler() http.HandlerFunc {
+	// GraphQL config.
 	config := generated.Config{
 		Resolvers:  resolver.NewResolver(h.service),
 		Directives: generated.DirectiveRoot{IsAuth: h.isAuth},
 	}
 
+	// User posts complexity.
+	config.Complexity.User.Posts = func(childComplexity int, first, last *int) int {
+		if first != nil {
+			return childComplexity * *first
+		} else if last != nil {
+			return childComplexity * *last
+		} else {
+			return 0
+		}
+	}
+
+	// Post author complexity.
+	config.Complexity.Post.Author = func(childComplexity int) int { return childComplexity * 2 }
+
+	// Creating a new graphql handler.
 	handler := handler.NewDefaultServer(generated.NewExecutableSchema(config))
+
+	// Set graphql complexity limit.
+	handler.Use(extension.FixedComplexityLimit(500))
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		handler.ServeHTTP(w, r)

@@ -38,6 +38,12 @@ func NewPost(id string) *Post {
 
 func (Post) IsNode() {}
 
+// List of post owned by the subject.
+type PostConnection struct {
+	// List of nodes.
+	Nodes []*Post `json:"nodes"`
+}
+
 // Create post input.
 type CreatePostInput struct {
 	AuthorID    string

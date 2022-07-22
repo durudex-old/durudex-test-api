@@ -9,6 +9,7 @@ package service
 
 import (
 	"context"
+	"math/rand"
 
 	"github.com/durudex/durudex-test-api/internal/domain"
 
@@ -22,6 +23,7 @@ type Post interface {
 	DeletePost(ctx context.Context, id string) (bool, error)
 	UpdatePost(ctx context.Context, input domain.UpdatePostInput) (bool, error)
 	Post(ctx context.Context, id string) (*domain.Post, error)
+	Posts(ctx context.Context, first, last *int) (*domain.PostConnection, error)
 }
 
 // Post service structure.
@@ -74,4 +76,53 @@ func (s *PostService) Post(ctx context.Context, id string) (*domain.Post, error)
 	}
 
 	return domain.NewPost(id), nil
+}
+
+// Getting a post connection.
+func (s *PostService) Posts(ctx context.Context, first, last *int) (*domain.PostConnection, error) {
+	var filter int
+
+	// Check filter and last filters.
+	switch {
+	// Check if first and last filters is not nil.
+	case first != nil && last != nil:
+		return nil, &gqlerror.Error{
+			Message:    "Must be `first` or `last`",
+			Extensions: map[string]interface{}{"code": domain.CodeInvalidArgument},
+		}
+	// Check if first filter is nil.
+	case first == nil:
+		// Check if last filter is nil or set last filter.
+		if last == nil {
+			return nil, &gqlerror.Error{
+				Message:    "Must be `first` or `last`",
+				Extensions: map[string]interface{}{"code": domain.CodeInvalidArgument},
+			}
+		} else if *last > 50 || *last < 1 {
+			return nil, &gqlerror.Error{
+				Message:    "`last` must not exceed 50 or be less than 1",
+				Extensions: map[string]interface{}{"code": domain.CodeInvalidArgument},
+			}
+		}
+
+		filter = *last
+	// Check if first filter is nil or set last filter.
+	case *first > 50 || *first < 1:
+		return nil, &gqlerror.Error{
+			Message:    "`first` must not exceed 50 or be less than 1",
+			Extensions: map[string]interface{}{"code": domain.CodeInvalidArgument},
+		}
+	// Set first filter.
+	default:
+		filter = *first
+	}
+
+	n := rand.Intn(filter)
+	posts := make([]*domain.Post, n)
+
+	for i := 0; i < n; i++ {
+		posts[i] = domain.NewPost(ksuid.New().String())
+	}
+
+	return &domain.PostConnection{Nodes: posts}, nil
 }

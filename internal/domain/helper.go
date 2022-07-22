@@ -41,7 +41,7 @@ func NewRandomAttachmentsURLArray(num int) []string {
 	url := "https://cdn.durudex.com/attachments/" + ksuid.New().String() + "/"
 
 	for i := 0; i < num; i++ {
-		images = append(images, url+faker.Word()+".png")
+		images[i] = url + faker.Word() + ".png"
 	}
 
 	return images

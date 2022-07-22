@@ -37,11 +37,12 @@ func (h *Handler) GraphqlHandler() http.HandlerFunc {
 
 	// User posts complexity.
 	config.Complexity.User.Posts = func(childComplexity int, first, last *int) int {
-		if first != nil {
+		switch {
+		case first != nil:
 			return childComplexity * *first
-		} else if last != nil {
+		case last != nil:
 			return childComplexity * *last
-		} else {
+		default:
 			return 0
 		}
 	}

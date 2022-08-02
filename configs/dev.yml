@@ -7,6 +7,14 @@ http:
   host: ""
   port: 8000
   name: "Durudex Test API"
+  cors:
+    enable: false
+    allow-origins: "*"
+    allow-methods: "*"
+    allow-headers: "*"
+
+graphql:
+  complexity-limit: 1000
 
 auth:
   ttl: 15m

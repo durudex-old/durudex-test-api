@@ -14,6 +14,7 @@ import (
 
 	"github.com/durudex/durudex-test-api/internal/config"
 	"github.com/durudex/durudex-test-api/internal/service"
+	"github.com/durudex/durudex-test-api/internal/transport/graphql"
 	"github.com/durudex/durudex-test-api/internal/transport/http"
 
 	"github.com/rs/zerolog"
@@ -32,19 +33,21 @@ func init() {
 
 // A function that running the application.
 func main() {
-	// Initialize config.
-	cfg, err := config.Init()
+	// Creating a new config.
+	cfg, err := config.NewConfig()
 	if err != nil {
 		log.Error().Err(err).Msg("error initialize config")
 	}
 
 	// Creating a new service.
 	service := service.NewService(cfg)
+	// Creating a new graphql handler.
+	graphqlHandler := graphql.NewHandler(service, &cfg.GraphQL)
 	// Creating a new http handler.
-	handler := http.NewHandler(service, &cfg.Auth)
+	httpHandler := http.NewHandler(&cfg.HTTP, graphqlHandler, cfg.Auth.SigningKey)
 
 	// Create a new server.
-	srv := http.NewServer(&cfg.HTTP, handler)
+	srv := http.NewServer(&cfg.HTTP, httpHandler)
 
 	// Run server.
 	go srv.Run()

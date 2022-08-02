@@ -22,15 +22,30 @@ const defaultConfigPath string = "configs/main"
 type (
 	// Config variables.
 	Config struct {
-		HTTP HTTPConfig
-		Auth AuthConfig
+		HTTP    HTTPConfig    `mapstructure:"http"`
+		Auth    AuthConfig    `mapstructure:"auth"`
+		GraphQL GraphQLConfig `mapstructure:"graphql"`
 	}
 
 	// HTTP server config variables.
 	HTTPConfig struct {
-		Host string `mapstructure:"host"`
-		Port string `mapstructure:"port"`
-		Name string `mapstructure:"name"`
+		Host string     `mapstructure:"host"`
+		Port string     `mapstructure:"port"`
+		Name string     `mapstructure:"name"`
+		Cors CorsConfig `mapstructure:"cors"`
+	}
+
+	// CORS config variables.
+	CorsConfig struct {
+		Enable       bool   `mapstructure:"enable"`
+		AllowOrigins string `mapstructure:"allow-origins"`
+		AllowMethods string `mapstructure:"allow-methods"`
+		AllowHeaders string `mapstructure:"allow-headers"`
+	}
+
+	// GraphQL config variables.
+	GraphQLConfig struct {
+		ComplexityLimit int `mapstructure:"complexity-limit"`
 	}
 
 	// Auth config variables.
@@ -40,8 +55,8 @@ type (
 	}
 )
 
-// Initialize config.
-func Init() (*Config, error) {
+// Creating a new config.
+func NewConfig() (*Config, error) {
 	log.Debug().Msg("Initialize config...")
 
 	// Parsing specified when starting the config file.
@@ -52,7 +67,7 @@ func Init() (*Config, error) {
 	var cfg Config
 
 	// Unmarshal config keys.
-	if err := unmarshal(&cfg); err != nil {
+	if err := viper.Unmarshal(&cfg); err != nil {
 		return nil, err
 	}
 
@@ -82,18 +97,6 @@ func parseConfigFile() error {
 
 	// Read config file.
 	return viper.ReadInConfig()
-}
-
-// Unmarshal config keys.
-func unmarshal(cfg *Config) error {
-	log.Debug().Msg("Unmarshal config keys...")
-
-	// Unmarshal auth keys.
-	if err := viper.UnmarshalKey("auth", &cfg.Auth); err != nil {
-		return err
-	}
-	// Unmarshal http keys.
-	return viper.UnmarshalKey("http", &cfg.HTTP)
 }
 
 // Set configurations from environment.

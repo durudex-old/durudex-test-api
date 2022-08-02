@@ -10,6 +10,7 @@ package graphql
 import (
 	"net/http"
 
+	"github.com/durudex/durudex-test-api/internal/config"
 	"github.com/durudex/durudex-test-api/internal/service"
 	"github.com/durudex/durudex-test-api/internal/transport/graphql/generated"
 	"github.com/durudex/durudex-test-api/internal/transport/graphql/resolver"
@@ -20,11 +21,14 @@ import (
 )
 
 // GraphQL handler structure.
-type Handler struct{ service *service.Service }
+type Handler struct {
+	service *service.Service
+	config  *config.GraphQLConfig
+}
 
 // Creating a new graphql handler.
-func NewHandler(service *service.Service) *Handler {
-	return &Handler{service: service}
+func NewHandler(service *service.Service, config *config.GraphQLConfig) *Handler {
+	return &Handler{service: service, config: config}
 }
 
 // GraphQL handler.
@@ -35,26 +39,14 @@ func (h *Handler) GraphqlHandler() http.HandlerFunc {
 		Directives: generated.DirectiveRoot{IsAuth: h.isAuth},
 	}
 
-	// User posts complexity.
-	config.Complexity.User.Posts = func(childComplexity int, first, last *int) int {
-		switch {
-		case first != nil:
-			return childComplexity * *first
-		case last != nil:
-			return childComplexity * *last
-		default:
-			return 0
-		}
-	}
-
-	// Post author complexity.
-	config.Complexity.Post.Author = func(childComplexity int) int { return childComplexity * 2 }
+	// Setting the complexity of the query.
+	setComplexity(&config.Complexity)
 
 	// Creating a new graphql handler.
 	handler := handler.NewDefaultServer(generated.NewExecutableSchema(config))
 
 	// Set graphql complexity limit.
-	handler.Use(extension.FixedComplexityLimit(500))
+	handler.Use(extension.FixedComplexityLimit(h.config.ComplexityLimit))
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		handler.ServeHTTP(w, r)

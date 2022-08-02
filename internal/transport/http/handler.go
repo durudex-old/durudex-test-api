@@ -9,7 +9,6 @@ package http
 
 import (
 	"github.com/durudex/durudex-test-api/internal/config"
-	"github.com/durudex/durudex-test-api/internal/service"
 	"github.com/durudex/durudex-test-api/internal/transport/graphql"
 
 	"github.com/gofiber/adaptor/v2"
@@ -19,39 +18,42 @@ import (
 
 // HTTP handler structure.
 type Handler struct {
-	service *service.Service
-	cfg     *config.AuthConfig
+	config     *config.HTTPConfig
+	graphql    *graphql.Handler
+	signingKey string
 }
 
-// Creating a new http handler.
-func NewHandler(service *service.Service, cfg *config.AuthConfig) *Handler {
-	return &Handler{service: service, cfg: cfg}
+// Creating a new HTTP handler.
+func NewHandler(config *config.HTTPConfig, graphql *graphql.Handler, signingKey string) *Handler {
+	return &Handler{config: config, graphql: graphql, signingKey: signingKey}
+}
+
+// Initialize http middleware.
+func (h *Handler) InitMiddleware(router fiber.Router) {
+	if h.config.Cors.Enable {
+		// CORS configuration.
+		corsConfig := cors.Config{
+			AllowOrigins: h.config.Cors.AllowOrigins,
+			AllowMethods: h.config.Cors.AllowMethods,
+			AllowHeaders: h.config.Cors.AllowHeaders,
+		}
+
+		// Set CORS middleware.
+		router.Use(cors.New(corsConfig))
+	}
+
+	// Set default headers.
+	router.Use(h.authMiddleware)
 }
 
 // Initialize http routes.
 func (h *Handler) InitRoutes(router fiber.Router) {
-	// CORS configuration.
-	corsConfig := cors.Config{
-		AllowOrigins: "*",
-		AllowMethods: "*",
-		AllowHeaders: "*",
-	}
-
-	// Set http middleware.
-	router.Use(
-		cors.New(corsConfig),
-		h.authMiddleware,
-	)
-
+	// Ping pong route.
 	router.Get("/ping", func(ctx *fiber.Ctx) error {
 		return ctx.SendString("pong")
 	})
 
-	// Creating a new graphql handler.
-	graphql := graphql.NewHandler(h.service)
-
-	router.Use(h.authMiddleware)
-
-	router.Get("/", adaptor.HTTPHandlerFunc(graphql.PlaygroundHandler()))
-	router.Post("/query", adaptor.HTTPHandlerFunc(graphql.GraphqlHandler()))
+	// GraphQL routes.
+	router.Get("/", adaptor.HTTPHandlerFunc(h.graphql.PlaygroundHandler()))
+	router.Post("/query", adaptor.HTTPHandlerFunc(h.graphql.GraphqlHandler()))
 }

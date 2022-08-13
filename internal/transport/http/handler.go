@@ -42,7 +42,7 @@ func (h *Handler) InitMiddleware(router fiber.Router) {
 		router.Use(cors.New(corsConfig))
 	}
 
-	// Set default headers.
+	// Set default http middleware.
 	router.Use(h.authMiddleware)
 }
 

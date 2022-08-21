@@ -12,78 +12,47 @@ import (
 	"time"
 
 	"github.com/bxcodec/faker/v3"
+	"github.com/segmentio/ksuid"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
 const UserCtx string = "userId"
 
-// User structure.
+// User type.
 type User struct {
-	ID        string    `json:"id"`
-	Username  string    `json:"username"`
+	// User id.
+	Id ksuid.KSUID `json:"id"`
+	// Username.
+	Username string `json:"username"`
+	// User last visit date.
 	LastVisit time.Time `json:"lastVisit"`
-	Verified  bool      `json:"verified"`
-	AvatarURL *string   `json:"avatarUrl"`
-}
-
-// Creating a new user.
-func NewUser(id string) *User {
-	return &User{
-		ID:        id,
-		Username:  faker.Username(),
-		LastVisit: time.Unix(faker.RandomUnixTime(), 0),
-		Verified:  rand.Intn(2) == 1,
-		AvatarURL: NewOptionalString("https://cdn.durudex.com/avatar/" + id + ".png"),
-	}
+	// User verified status.
+	Verified bool `json:"verified"`
+	// User avatar url.
+	AvatarUrl *string `json:"avatarUrl"`
 }
 
 func (User) IsNode() {}
 
-// User Sign Up input.
-type SignUpInput struct {
-	Username string `json:"username"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
-	Code     uint64 `json:"code"`
-}
-
-// Validate user sign up input.
-func (i SignUpInput) Validate() error {
-	switch {
-	case !RxUsername.MatchString(i.Username):
-		// Return invalid username graphql error.
-		return &gqlerror.Error{
-			Message:    "Invalid Username",
-			Extensions: map[string]interface{}{"code": CodeInvalidArgument},
-		}
-	case !RxPassword.MatchString(i.Password):
-		// Return invalid password graphql error.
-		return &gqlerror.Error{
-			Message:    "Invalid Password",
-			Extensions: map[string]interface{}{"code": CodeInvalidArgument},
-		}
-	case !RxEmail.MatchString(i.Email):
-		// Return invalid email graphql error.
-		return &gqlerror.Error{
-			Message:    "Invalid Email",
-			Extensions: map[string]interface{}{"code": CodeInvalidArgument},
-		}
-	case i.Code == 0:
-		// Return invalid code graphql error.
-		return &gqlerror.Error{
-			Message:    "Invalid Code",
-			Extensions: map[string]interface{}{"code": CodeInvalidArgument},
-		}
-	default:
-		return nil
+// Creating a new user.
+func NewUser(id ksuid.KSUID) *User {
+	return &User{
+		Id:        id,
+		Username:  faker.Username(),
+		LastVisit: time.Unix(faker.RandomUnixTime(), 0),
+		Verified:  rand.Intn(2) == 1,
+		AvatarUrl: NewOptionalString("https://cdn.durudex.com/avatar/" + id.String() + ".png"),
 	}
 }
 
-// User forgot password input.
+// Forgot user password input.
 type ForgotPasswordInput struct {
-	Email    string `json:"email"`
+	// User email.
+	Email string `json:"email"`
+	// New user password.
 	Password string `json:"password"`
-	Code     uint64 `json:"code"`
+	// User verification code.
+	Code uint64 `json:"code"`
 }
 
 // Validate user forgot password input.

@@ -11,6 +11,7 @@ import (
 	"context"
 
 	"github.com/durudex/durudex-test-api/internal/domain"
+	"github.com/segmentio/ksuid"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/vektah/gqlparser/v2/gqlerror"
@@ -18,10 +19,14 @@ import (
 
 // User service interface.
 type User interface {
+	// Creating a new user verification email code.
 	CreateVerifyEmailCode(ctx context.Context, email string) (bool, error)
+	// Forgot user password.
 	ForgotPassword(ctx context.Context, input domain.ForgotPasswordInput) (bool, error)
+	// Update user avatar.
 	UpdateAvatar(ctx context.Context, file graphql.Upload) (string, error)
-	User(ctx context.Context, id string) (*domain.User, error)
+	// Getting a user.
+	User(ctx context.Context, id ksuid.KSUID) (*domain.User, error)
 }
 
 // User service structure.
@@ -61,8 +66,8 @@ func (s *UserService) UpdateAvatar(ctx context.Context, file graphql.Upload) (st
 }
 
 // Getting a user.
-func (s *UserService) User(ctx context.Context, id string) (*domain.User, error) {
-	if id == "0" {
+func (s *UserService) User(ctx context.Context, id ksuid.KSUID) (*domain.User, error) {
+	if id.IsNil() {
 		return nil, &gqlerror.Error{
 			Message:    "User not found",
 			Extensions: map[string]interface{}{"code": domain.CodeNotFound},

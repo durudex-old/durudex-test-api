@@ -19,10 +19,15 @@ import (
 
 // Auth service interface.
 type Auth interface {
+	// User Sign Up.
 	SignUp(ctx context.Context, input domain.SignUpInput) (*domain.Tokens, error)
+	// User Sign In.
 	SignIn(ctx context.Context, input domain.SignInInput) (*domain.Tokens, error)
+	// User Sign Out.
 	SignOut(ctx context.Context, input domain.RefreshTokenInput) (bool, error)
+	// Refresh user access token token.
 	RefreshToken(ctx context.Context, input domain.RefreshTokenInput) (string, error)
+	// Creating a new fake user session.
 	CreateSession() (*domain.Tokens, error)
 }
 

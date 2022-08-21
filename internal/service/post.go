@@ -19,11 +19,16 @@ import (
 
 // Post service interface.
 type Post interface {
-	CreatePost(ctx context.Context, input domain.CreatePostInput) (string, error)
-	DeletePost(ctx context.Context, id string) (bool, error)
+	// Creating a new post.
+	CreatePost(ctx context.Context, input domain.CreatePostInput) (ksuid.KSUID, error)
+	// Deleting a post.
+	DeletePost(ctx context.Context, id ksuid.KSUID) (bool, error)
+	// Updating a post.
 	UpdatePost(ctx context.Context, input domain.UpdatePostInput) (bool, error)
-	Post(ctx context.Context, id string) (*domain.Post, error)
-	Posts(ctx context.Context, first, last *int) (*domain.PostConnection, error)
+	// Getting a post.
+	Post(ctx context.Context, id ksuid.KSUID) (*domain.Post, error)
+	// Getting a posts.
+	Posts(ctx context.Context, sort domain.SortOptions) (*domain.PostConnection, error)
 }
 
 // Post service structure.
@@ -35,18 +40,18 @@ func NewPostService() *PostService {
 }
 
 // Creating a new post.
-func (s *PostService) CreatePost(ctx context.Context, input domain.CreatePostInput) (string, error) {
+func (s *PostService) CreatePost(ctx context.Context, input domain.CreatePostInput) (ksuid.KSUID, error) {
 	// Validate input.
 	if err := input.Validate(); err != nil {
-		return "", err
+		return ksuid.Nil, err
 	}
 
-	return ksuid.New().String(), nil
+	return ksuid.New(), nil
 }
 
 // Deleting a post.
-func (s *PostService) DeletePost(ctx context.Context, id string) (bool, error) {
-	if id == "0" {
+func (s *PostService) DeletePost(ctx context.Context, id ksuid.KSUID) (bool, error) {
+	if id.IsNil() {
 		return false, &gqlerror.Error{
 			Message:    "Post not found",
 			Extensions: map[string]interface{}{"code": domain.CodeNotFound},
@@ -67,8 +72,8 @@ func (s *PostService) UpdatePost(ctx context.Context, input domain.UpdatePostInp
 }
 
 // Getting a post.
-func (s *PostService) Post(ctx context.Context, id string) (*domain.Post, error) {
-	if id == "0" {
+func (s *PostService) Post(ctx context.Context, id ksuid.KSUID) (*domain.Post, error) {
+	if id.IsNil() {
 		return nil, &gqlerror.Error{
 			Message:    "Post not found",
 			Extensions: map[string]interface{}{"code": domain.CodeNotFound},
@@ -78,51 +83,58 @@ func (s *PostService) Post(ctx context.Context, id string) (*domain.Post, error)
 	return domain.NewPost(id), nil
 }
 
-// Getting a post connection.
-func (s *PostService) Posts(ctx context.Context, first, last *int) (*domain.PostConnection, error) {
-	var filter int
+// Getting a posts.
+func (s *PostService) Posts(ctx context.Context, sort domain.SortOptions) (*domain.PostConnection, error) {
+	var limit int
 
 	// Check filter and last filters.
 	switch {
 	// Check if first and last filters is not nil.
-	case first != nil && last != nil:
+	case sort.First != nil && sort.Last != nil:
 		return nil, &gqlerror.Error{
 			Message:    "Must be `first` or `last`",
 			Extensions: map[string]interface{}{"code": domain.CodeInvalidArgument},
 		}
 	// Check if first filter is nil.
-	case first == nil:
+	case sort.First == nil:
 		// Check if last filter is nil or set last filter.
-		if last == nil {
+		if sort.Last == nil {
 			return nil, &gqlerror.Error{
 				Message:    "Must be `first` or `last`",
 				Extensions: map[string]interface{}{"code": domain.CodeInvalidArgument},
 			}
-		} else if *last > 50 || *last < 1 {
+		} else if *sort.Last > 50 || *sort.Last < 1 {
 			return nil, &gqlerror.Error{
 				Message:    "`last` must not exceed 50 or be less than 1",
 				Extensions: map[string]interface{}{"code": domain.CodeInvalidArgument},
 			}
 		}
 
-		filter = *last
+		limit = *sort.Last
 	// Check if first filter is nil or set last filter.
-	case *first > 50 || *first < 1:
+	case *sort.First > 50 || *sort.First < 1:
 		return nil, &gqlerror.Error{
 			Message:    "`first` must not exceed 50 or be less than 1",
 			Extensions: map[string]interface{}{"code": domain.CodeInvalidArgument},
 		}
 	// Set first filter.
 	default:
-		filter = *first
+		limit = *sort.First
 	}
 
-	n := rand.Intn(filter)
-	posts := make([]*domain.Post, n)
-
-	for i := 0; i < n; i++ {
-		posts[i] = domain.NewPost(ksuid.New().String())
+	if limit == 1 {
+		if rand.Intn(2) == 1 {
+			limit = 0
+		}
+	} else {
+		limit = rand.Intn(limit)
 	}
 
-	return &domain.PostConnection{Nodes: posts}, nil
+	nodes := make([]*domain.Post, limit)
+
+	for i := 0; i < limit; i++ {
+		nodes[i] = domain.NewPost(ksuid.New())
+	}
+
+	return &domain.PostConnection{Nodes: nodes}, nil
 }

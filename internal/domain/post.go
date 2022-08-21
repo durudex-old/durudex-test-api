@@ -18,37 +18,51 @@ import (
 
 // Post type.
 type Post struct {
-	ID          string     `json:"id"`
-	Author      *User      `json:"author"`
-	Text        string     `json:"text"`
-	UpdatedAt   *time.Time `json:"updatedAt"`
-	Attachments []string   `json:"attachments"`
+	// Post id.
+	Id ksuid.KSUID `json:"id"`
+	// Post author.
+	Author *User `json:"author"`
+	// Post text.
+	Text string `json:"text"`
+	// Post updated date.
+	UpdatedAt *time.Time `json:"updatedAt"`
+	// Post attachments.
+	Attachments []string `json:"attachments"`
 }
 
+func (Post) IsNode() {}
+
 // Creating a new post.
-func NewPost(id string) *Post {
+func NewPost(id ksuid.KSUID) *Post {
 	return &Post{
-		ID:          id,
-		Author:      NewUser(ksuid.New().String()),
+		Id:          id,
+		Author:      NewUser(ksuid.New()),
 		Text:        faker.Sentence(),
 		UpdatedAt:   NewOptionalTime(),
 		Attachments: NewRandomAttachmentsURLArray(rand.Intn(5)),
 	}
 }
 
-func (Post) IsNode() {}
-
 // List of post owned by the subject.
 type PostConnection struct {
-	// List of nodes.
+	// A list of nodes.
 	Nodes []*Post `json:"nodes"`
+}
+
+// An edge in a post connection.
+type PostEdge struct {
+	// A cursor for use in pagination.
+	Cursor string `json:"cursor"`
+	// The item at the end of the edge.
+	Node *Post `json:"node"`
 }
 
 // Create post input.
 type CreatePostInput struct {
-	AuthorID    string
-	Text        string `json:"text"`
-	Attachments []*UploadFile
+	// Post text.
+	Text string `json:"text"`
+	// Post attachments.
+	Attachments []*UploadFile `json:"attachments"`
 }
 
 // Validate create post input.
@@ -65,7 +79,9 @@ func (i CreatePostInput) Validate() error {
 
 // Update post input.
 type UpdatePostInput struct {
-	ID   string `json:"id"`
+	// Post id.
+	Id ksuid.KSUID `json:"id"`
+	// Post text.
 	Text string `json:"text"`
 }
 

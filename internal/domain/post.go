@@ -47,6 +47,8 @@ func NewPost(id ksuid.KSUID) *Post {
 type PostConnection struct {
 	// A list of nodes.
 	Nodes []*Post `json:"nodes"`
+	// Identifies the total count of items in the connection.
+	TotalCount int `json:"totalCount"`
 }
 
 // An edge in a post connection.

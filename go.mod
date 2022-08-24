@@ -3,7 +3,7 @@ module github.com/durudex/durudex-test-api
 go 1.18
 
 require (
-	github.com/99designs/gqlgen v0.17.14
+	github.com/99designs/gqlgen v0.17.15
 	github.com/bxcodec/faker/v3 v3.8.0
 	github.com/gofiber/adaptor/v2 v2.1.20
 	github.com/gofiber/fiber/v2 v2.29.0

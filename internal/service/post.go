@@ -136,5 +136,8 @@ func (s *PostService) Posts(ctx context.Context, sort domain.SortOptions) (*doma
 		nodes[i] = domain.NewPost(ksuid.New())
 	}
 
-	return &domain.PostConnection{Nodes: nodes}, nil
+	return &domain.PostConnection{
+		Nodes:      nodes,
+		TotalCount: limit + limit,
+	}, nil
 }

@@ -14,6 +14,7 @@ import (
 
 	"github.com/bxcodec/faker/v3"
 	"github.com/segmentio/ksuid"
+	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
 // Regular fot validating strings.
@@ -35,6 +36,48 @@ type SortOptions struct {
 	Last   *int
 	Before *string
 	After  *string
+}
+
+// Validating query sort options.
+func (o SortOptions) Validate() (int, error) {
+	var limit int
+
+	// Check filter and last filters.
+	switch {
+	// Check if first and last filters is not nil.
+	case o.First != nil && o.Last != nil:
+		return 0, &gqlerror.Error{
+			Message:    "Must be `first` or `last`",
+			Extensions: map[string]interface{}{"code": CodeInvalidArgument},
+		}
+	// Check if first filter is nil.
+	case o.First == nil:
+		// Check if last filter is nil or set last filter.
+		if o.Last == nil {
+			return 0, &gqlerror.Error{
+				Message:    "Must be `first` or `last`",
+				Extensions: map[string]interface{}{"code": CodeInvalidArgument},
+			}
+		} else if *o.Last > 50 || *o.Last < 1 {
+			return 0, &gqlerror.Error{
+				Message:    "`last` must not exceed 50 or be less than 1",
+				Extensions: map[string]interface{}{"code": CodeInvalidArgument},
+			}
+		}
+
+		limit = *o.Last
+	// Check if first filter is nil or set last filter.
+	case *o.First > 50 || *o.First < 1:
+		return 0, &gqlerror.Error{
+			Message:    "`first` must not exceed 50 or be less than 1",
+			Extensions: map[string]interface{}{"code": CodeInvalidArgument},
+		}
+	// Set first filter.
+	default:
+		limit = *o.First
+	}
+
+	return limit, nil
 }
 
 // Creating a new random optional time.

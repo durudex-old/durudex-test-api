@@ -57,33 +57,6 @@ func Test_GenerateAccessToken(t *testing.T) {
 	}
 }
 
-// Testing generating a new refresh token.
-func Test_GenerateRefreshToken(t *testing.T) {
-	// Tests structures.
-	tests := []struct {
-		name    string
-		wantErr bool
-	}{
-		{name: "OK"},
-	}
-
-	// Conducting tests in various structures.
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			// Generate a new refresh token.
-			got, err := auth.GenerateRefreshToken()
-			if (err != nil) != tt.wantErr {
-				t.Errorf("error generating refresh token: %s", err.Error())
-			}
-
-			// Check refresh token is empty.
-			if got == "" {
-				t.Error("error refresh token is empty")
-			}
-		})
-	}
-}
-
 // Testing parsing jwt access token.
 func Test_Parse(t *testing.T) {
 	// Testing args.

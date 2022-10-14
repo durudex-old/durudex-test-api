@@ -42,6 +42,7 @@ type ResolverRoot interface {
 	Mutation() MutationResolver
 	PostConnection() PostConnectionResolver
 	Query() QueryResolver
+	SessionConnection() SessionConnectionResolver
 	User() UserResolver
 }
 
@@ -54,10 +55,11 @@ type ComplexityRoot struct {
 		CreatePost            func(childComplexity int, input domain.CreatePostInput) int
 		CreateVerifyEmailCode func(childComplexity int, email string) int
 		DeletePost            func(childComplexity int, id ksuid.KSUID) int
+		DeleteSession         func(childComplexity int, input domain.DeleteSessionInput) int
 		ForgotPassword        func(childComplexity int, input domain.ForgotPasswordInput) int
-		RefreshToken          func(childComplexity int, token string) int
+		RefreshToken          func(childComplexity int, input domain.SessionCredInput) int
 		SignIn                func(childComplexity int, input domain.SignInInput) int
-		SignOut               func(childComplexity int, token string) int
+		SignOut               func(childComplexity int, input domain.SessionCredInput) int
 		SignUp                func(childComplexity int, input domain.SignUpInput) int
 		UpdateAvatar          func(childComplexity int, file graphql.Upload) int
 		UpdatePost            func(childComplexity int, input domain.UpdatePostInput) int
@@ -89,9 +91,30 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		Me   func(childComplexity int) int
-		Post func(childComplexity int, id ksuid.KSUID) int
-		User func(childComplexity int, id ksuid.KSUID) int
+		Me       func(childComplexity int) int
+		Post     func(childComplexity int, id ksuid.KSUID) int
+		Session  func(childComplexity int, id ksuid.KSUID) int
+		Sessions func(childComplexity int, first *int, last *int, before *string, after *string) int
+		User     func(childComplexity int, id ksuid.KSUID) int
+	}
+
+	Session struct {
+		ExpiresIn func(childComplexity int) int
+		Id        func(childComplexity int) int
+		Ip        func(childComplexity int) int
+		UserId    func(childComplexity int) int
+	}
+
+	SessionConnection struct {
+		Edges      func(childComplexity int) int
+		Nodes      func(childComplexity int) int
+		PageInfo   func(childComplexity int) int
+		TotalCount func(childComplexity int) int
+	}
+
+	SessionEdge struct {
+		Cursor func(childComplexity int) int
+		Node   func(childComplexity int) int
 	}
 
 	Tokens struct {
@@ -112,8 +135,9 @@ type ComplexityRoot struct {
 type MutationResolver interface {
 	SignUp(ctx context.Context, input domain.SignUpInput) (*domain.Tokens, error)
 	SignIn(ctx context.Context, input domain.SignInInput) (*domain.Tokens, error)
-	SignOut(ctx context.Context, token string) (bool, error)
-	RefreshToken(ctx context.Context, token string) (string, error)
+	SignOut(ctx context.Context, input domain.SessionCredInput) (bool, error)
+	RefreshToken(ctx context.Context, input domain.SessionCredInput) (string, error)
+	DeleteSession(ctx context.Context, input domain.DeleteSessionInput) (bool, error)
 	CreatePost(ctx context.Context, input domain.CreatePostInput) (ksuid.KSUID, error)
 	DeletePost(ctx context.Context, id ksuid.KSUID) (bool, error)
 	UpdatePost(ctx context.Context, input domain.UpdatePostInput) (bool, error)
@@ -126,9 +150,15 @@ type PostConnectionResolver interface {
 	PageInfo(ctx context.Context, obj *domain.PostConnection) (*domain.PageInfo, error)
 }
 type QueryResolver interface {
+	Session(ctx context.Context, id ksuid.KSUID) (*domain.Session, error)
+	Sessions(ctx context.Context, first *int, last *int, before *string, after *string) (*domain.SessionConnection, error)
 	Post(ctx context.Context, id ksuid.KSUID) (*domain.Post, error)
 	Me(ctx context.Context) (*domain.User, error)
 	User(ctx context.Context, id ksuid.KSUID) (*domain.User, error)
+}
+type SessionConnectionResolver interface {
+	Edges(ctx context.Context, obj *domain.SessionConnection) ([]*domain.SessionEdge, error)
+	PageInfo(ctx context.Context, obj *domain.SessionConnection) (*domain.PageInfo, error)
 }
 type UserResolver interface {
 	Posts(ctx context.Context, obj *domain.User, first *int, last *int, before *string, after *string) (*domain.PostConnection, error)
@@ -185,6 +215,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.DeletePost(childComplexity, args["id"].(ksuid.KSUID)), true
 
+	case "Mutation.deleteSession":
+		if e.complexity.Mutation.DeleteSession == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteSession_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeleteSession(childComplexity, args["input"].(domain.DeleteSessionInput)), true
+
 	case "Mutation.forgotPassword":
 		if e.complexity.Mutation.ForgotPassword == nil {
 			break
@@ -207,7 +249,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.RefreshToken(childComplexity, args["token"].(string)), true
+		return e.complexity.Mutation.RefreshToken(childComplexity, args["input"].(domain.SessionCredInput)), true
 
 	case "Mutation.signIn":
 		if e.complexity.Mutation.SignIn == nil {
@@ -231,7 +273,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.SignOut(childComplexity, args["token"].(string)), true
+		return e.complexity.Mutation.SignOut(childComplexity, args["input"].(domain.SessionCredInput)), true
 
 	case "Mutation.signUp":
 		if e.complexity.Mutation.SignUp == nil {
@@ -379,6 +421,30 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Post(childComplexity, args["id"].(ksuid.KSUID)), true
 
+	case "Query.session":
+		if e.complexity.Query.Session == nil {
+			break
+		}
+
+		args, err := ec.field_Query_session_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Session(childComplexity, args["id"].(ksuid.KSUID)), true
+
+	case "Query.sessions":
+		if e.complexity.Query.Sessions == nil {
+			break
+		}
+
+		args, err := ec.field_Query_sessions_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Sessions(childComplexity, args["first"].(*int), args["last"].(*int), args["before"].(*string), args["after"].(*string)), true
+
 	case "Query.user":
 		if e.complexity.Query.User == nil {
 			break
@@ -390,6 +456,76 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.User(childComplexity, args["id"].(ksuid.KSUID)), true
+
+	case "Session.expiresIn":
+		if e.complexity.Session.ExpiresIn == nil {
+			break
+		}
+
+		return e.complexity.Session.ExpiresIn(childComplexity), true
+
+	case "Session.id":
+		if e.complexity.Session.Id == nil {
+			break
+		}
+
+		return e.complexity.Session.Id(childComplexity), true
+
+	case "Session.ip":
+		if e.complexity.Session.Ip == nil {
+			break
+		}
+
+		return e.complexity.Session.Ip(childComplexity), true
+
+	case "Session.userId":
+		if e.complexity.Session.UserId == nil {
+			break
+		}
+
+		return e.complexity.Session.UserId(childComplexity), true
+
+	case "SessionConnection.edges":
+		if e.complexity.SessionConnection.Edges == nil {
+			break
+		}
+
+		return e.complexity.SessionConnection.Edges(childComplexity), true
+
+	case "SessionConnection.nodes":
+		if e.complexity.SessionConnection.Nodes == nil {
+			break
+		}
+
+		return e.complexity.SessionConnection.Nodes(childComplexity), true
+
+	case "SessionConnection.pageInfo":
+		if e.complexity.SessionConnection.PageInfo == nil {
+			break
+		}
+
+		return e.complexity.SessionConnection.PageInfo(childComplexity), true
+
+	case "SessionConnection.totalCount":
+		if e.complexity.SessionConnection.TotalCount == nil {
+			break
+		}
+
+		return e.complexity.SessionConnection.TotalCount(childComplexity), true
+
+	case "SessionEdge.cursor":
+		if e.complexity.SessionEdge.Cursor == nil {
+			break
+		}
+
+		return e.complexity.SessionEdge.Cursor(childComplexity), true
+
+	case "SessionEdge.node":
+		if e.complexity.SessionEdge.Node == nil {
+			break
+		}
+
+		return e.complexity.SessionEdge.Node(childComplexity), true
 
 	case "Tokens.access":
 		if e.complexity.Tokens.Access == nil {
@@ -461,7 +597,9 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	ec := executionContext{rc, e}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputCreatePostInput,
+		ec.unmarshalInputDeleteSessionInput,
 		ec.unmarshalInputForgotPasswordInput,
+		ec.unmarshalInputSessionCredInput,
 		ec.unmarshalInputSignInInput,
 		ec.unmarshalInputSignUpInput,
 		ec.unmarshalInputUpdatePostInput,
@@ -532,7 +670,72 @@ var sources = []*ast.Source{
 # LICENSE file in the root directory of this source tree.
 
 """
-Authorization tokens.
+User session.
+"""
+type Session {
+  """
+  Session id.
+  """
+  id: ID!
+
+  """
+  Session user id.
+  """
+  userId: ID!
+
+  """
+  User session ip address.
+  """
+  ip: String!
+
+  """
+  Session expires in.
+  """
+  expiresIn: Timestamp!
+}
+
+"""
+List of session owned by the subject.
+"""
+type SessionConnection {
+  """
+  A list of nodes.
+  """
+  nodes: [Session]
+
+  """
+  A list of edges.
+  """
+  edges: [SessionEdge]
+
+  """
+  Information to aid in pagination.
+  """
+  pageInfo: PageInfo!
+
+  """
+  Identifies the total count of items in the connection.
+  """
+  totalCount: Int!
+}
+
+"""
+An edge in a session connection.
+"""
+type SessionEdge {
+  """
+  A cursor for use in pagination.
+  """
+  cursor: String!
+
+  """
+  The item at the end of the edge.
+  """
+  node: Session
+}
+
+"""
+Auth tokens.
 """
 type Tokens {
   """
@@ -560,12 +763,49 @@ extend type Mutation {
   """
   User Sign Out.
   """
-  signOut(token: String!): Boolean! @isAuth
+  signOut(input: SessionCredInput!): Boolean! @isAuth
 
   """
   Refresh authorization token.
   """
-  refreshToken(token: String!): String!
+  refreshToken(input: SessionCredInput!): String!
+
+  """
+  Delete user session.
+  """
+  deleteSession(input: DeleteSessionInput!): Boolean! @isAuth
+}
+
+extend type Query {
+  """
+  Getting user session.
+  """
+  session(id: ID!): Session @isAuth
+
+  """
+  Getting user sessions.
+  """
+  sessions(
+    """
+    Returns the first n elements from the list.
+    """
+    first: Int
+
+    """
+    Returns the last n elements from the list.
+    """
+    last: Int
+
+    """
+    Returns the elements in the list that come before the specified cursor.
+    """
+    before: String
+
+    """
+    Returns the elements in the list that come after the specified cursor.
+    """
+    after: String
+  ): SessionConnection! @isAuth
 }
 
 """
@@ -591,6 +831,11 @@ input SignUpInput {
   User verification code.
   """
   code: Uint64!
+
+  """
+  Client secret key.
+  """
+  secret: String!
 }
 
 """
@@ -606,6 +851,46 @@ input SignInInput {
   User password
   """
   password: String!
+
+  """
+  Client secret key.
+  """
+  secret: String!
+}
+
+"""
+Session credentials input.
+"""
+input SessionCredInput {
+  """
+  Refresh token.
+  """
+  refresh: String!
+
+  """
+  Client secret key.
+  """
+  secret: String!
+}
+
+"""
+Delete user session input.
+"""
+input DeleteSessionInput {
+  """
+  Session id.
+  """
+  id: ID!
+
+  """
+  Refresh token.
+  """
+  refresh: String!
+
+  """
+  Client secret key.
+  """
+  secret: String!
 }
 `, BuiltIn: false},
 	{Name: "../../../../schema/src/directive.graphqls", Input: `# Copyright © 2022 Durudex
@@ -988,6 +1273,21 @@ func (ec *executionContext) field_Mutation_deletePost_args(ctx context.Context, 
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_deleteSession_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 domain.DeleteSessionInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNDeleteSessionInput2githubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdomainᚐDeleteSessionInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_forgotPassword_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -1006,15 +1306,15 @@ func (ec *executionContext) field_Mutation_forgotPassword_args(ctx context.Conte
 func (ec *executionContext) field_Mutation_refreshToken_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["token"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("token"))
-		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+	var arg0 domain.SessionCredInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNSessionCredInput2githubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdomainᚐSessionCredInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["token"] = arg0
+	args["input"] = arg0
 	return args, nil
 }
 
@@ -1036,15 +1336,15 @@ func (ec *executionContext) field_Mutation_signIn_args(ctx context.Context, rawA
 func (ec *executionContext) field_Mutation_signOut_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["token"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("token"))
-		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+	var arg0 domain.SessionCredInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNSessionCredInput2githubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdomainᚐSessionCredInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["token"] = arg0
+	args["input"] = arg0
 	return args, nil
 }
 
@@ -1120,6 +1420,63 @@ func (ec *executionContext) field_Query_post_args(ctx context.Context, rawArgs m
 		}
 	}
 	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_session_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 ksuid.KSUID
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2githubᚗcomᚋsegmentioᚋksuidᚐKSUID(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_sessions_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *int
+	if tmp, ok := rawArgs["first"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("first"))
+		arg0, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["first"] = arg0
+	var arg1 *int
+	if tmp, ok := rawArgs["last"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("last"))
+		arg1, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["last"] = arg1
+	var arg2 *string
+	if tmp, ok := rawArgs["before"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("before"))
+		arg2, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["before"] = arg2
+	var arg3 *string
+	if tmp, ok := rawArgs["after"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("after"))
+		arg3, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["after"] = arg3
 	return args, nil
 }
 
@@ -1355,7 +1712,7 @@ func (ec *executionContext) _Mutation_signOut(ctx context.Context, field graphql
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		directive0 := func(rctx context.Context) (interface{}, error) {
 			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Mutation().SignOut(rctx, fc.Args["token"].(string))
+			return ec.resolvers.Mutation().SignOut(rctx, fc.Args["input"].(domain.SessionCredInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
 			if ec.directives.IsAuth == nil {
@@ -1429,7 +1786,7 @@ func (ec *executionContext) _Mutation_refreshToken(ctx context.Context, field gr
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().RefreshToken(rctx, fc.Args["token"].(string))
+		return ec.resolvers.Mutation().RefreshToken(rctx, fc.Args["input"].(domain.SessionCredInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1464,6 +1821,81 @@ func (ec *executionContext) fieldContext_Mutation_refreshToken(ctx context.Conte
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_refreshToken_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_deleteSession(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_deleteSession(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().DeleteSession(rctx, fc.Args["input"].(domain.DeleteSessionInput))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsAuth == nil {
+				return nil, errors.New("directive isAuth is not implemented")
+			}
+			return ec.directives.IsAuth(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(bool); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be bool`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_deleteSession(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_deleteSession_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -2481,6 +2913,173 @@ func (ec *executionContext) fieldContext_PostEdge_node(ctx context.Context, fiel
 	return fc, nil
 }
 
+func (ec *executionContext) _Query_session(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_session(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().Session(rctx, fc.Args["id"].(ksuid.KSUID))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsAuth == nil {
+				return nil, errors.New("directive isAuth is not implemented")
+			}
+			return ec.directives.IsAuth(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*domain.Session); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/durudex/durudex-test-api/internal/domain.Session`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*domain.Session)
+	fc.Result = res
+	return ec.marshalOSession2ᚖgithubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdomainᚐSession(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_session(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Session_id(ctx, field)
+			case "userId":
+				return ec.fieldContext_Session_userId(ctx, field)
+			case "ip":
+				return ec.fieldContext_Session_ip(ctx, field)
+			case "expiresIn":
+				return ec.fieldContext_Session_expiresIn(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Session", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_session_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_sessions(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_sessions(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().Sessions(rctx, fc.Args["first"].(*int), fc.Args["last"].(*int), fc.Args["before"].(*string), fc.Args["after"].(*string))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsAuth == nil {
+				return nil, errors.New("directive isAuth is not implemented")
+			}
+			return ec.directives.IsAuth(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*domain.SessionConnection); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/durudex/durudex-test-api/internal/domain.SessionConnection`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*domain.SessionConnection)
+	fc.Result = res
+	return ec.marshalNSessionConnection2ᚖgithubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdomainᚐSessionConnection(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_sessions(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "nodes":
+				return ec.fieldContext_SessionConnection_nodes(ctx, field)
+			case "edges":
+				return ec.fieldContext_SessionConnection_edges(ctx, field)
+			case "pageInfo":
+				return ec.fieldContext_SessionConnection_pageInfo(ctx, field)
+			case "totalCount":
+				return ec.fieldContext_SessionConnection_totalCount(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type SessionConnection", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_sessions_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_post(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_post(ctx, field)
 	if err != nil {
@@ -2813,6 +3412,469 @@ func (ec *executionContext) fieldContext_Query___schema(ctx context.Context, fie
 				return ec.fieldContext___Schema_directives(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type __Schema", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Session_id(ctx context.Context, field graphql.CollectedField, obj *domain.Session) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Session_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Id, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(ksuid.KSUID)
+	fc.Result = res
+	return ec.marshalNID2githubᚗcomᚋsegmentioᚋksuidᚐKSUID(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Session_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Session",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Session_userId(ctx context.Context, field graphql.CollectedField, obj *domain.Session) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Session_userId(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UserId, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(ksuid.KSUID)
+	fc.Result = res
+	return ec.marshalNID2githubᚗcomᚋsegmentioᚋksuidᚐKSUID(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Session_userId(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Session",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Session_ip(ctx context.Context, field graphql.CollectedField, obj *domain.Session) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Session_ip(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Ip, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Session_ip(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Session",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Session_expiresIn(ctx context.Context, field graphql.CollectedField, obj *domain.Session) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Session_expiresIn(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ExpiresIn, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTimestamp2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Session_expiresIn(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Session",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Timestamp does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SessionConnection_nodes(ctx context.Context, field graphql.CollectedField, obj *domain.SessionConnection) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SessionConnection_nodes(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Nodes, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*domain.Session)
+	fc.Result = res
+	return ec.marshalOSession2ᚕᚖgithubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdomainᚐSession(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_SessionConnection_nodes(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SessionConnection",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Session_id(ctx, field)
+			case "userId":
+				return ec.fieldContext_Session_userId(ctx, field)
+			case "ip":
+				return ec.fieldContext_Session_ip(ctx, field)
+			case "expiresIn":
+				return ec.fieldContext_Session_expiresIn(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Session", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SessionConnection_edges(ctx context.Context, field graphql.CollectedField, obj *domain.SessionConnection) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SessionConnection_edges(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.SessionConnection().Edges(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*domain.SessionEdge)
+	fc.Result = res
+	return ec.marshalOSessionEdge2ᚕᚖgithubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdomainᚐSessionEdge(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_SessionConnection_edges(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SessionConnection",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "cursor":
+				return ec.fieldContext_SessionEdge_cursor(ctx, field)
+			case "node":
+				return ec.fieldContext_SessionEdge_node(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type SessionEdge", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SessionConnection_pageInfo(ctx context.Context, field graphql.CollectedField, obj *domain.SessionConnection) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SessionConnection_pageInfo(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.SessionConnection().PageInfo(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*domain.PageInfo)
+	fc.Result = res
+	return ec.marshalNPageInfo2ᚖgithubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdomainᚐPageInfo(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_SessionConnection_pageInfo(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SessionConnection",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "startCursor":
+				return ec.fieldContext_PageInfo_startCursor(ctx, field)
+			case "endCursor":
+				return ec.fieldContext_PageInfo_endCursor(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type PageInfo", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SessionConnection_totalCount(ctx context.Context, field graphql.CollectedField, obj *domain.SessionConnection) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SessionConnection_totalCount(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TotalCount, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_SessionConnection_totalCount(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SessionConnection",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SessionEdge_cursor(ctx context.Context, field graphql.CollectedField, obj *domain.SessionEdge) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SessionEdge_cursor(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Cursor, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_SessionEdge_cursor(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SessionEdge",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SessionEdge_node(ctx context.Context, field graphql.CollectedField, obj *domain.SessionEdge) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SessionEdge_node(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Node, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*domain.Session)
+	fc.Result = res
+	return ec.marshalOSession2ᚖgithubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdomainᚐSession(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_SessionEdge_node(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SessionEdge",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Session_id(ctx, field)
+			case "userId":
+				return ec.fieldContext_Session_userId(ctx, field)
+			case "ip":
+				return ec.fieldContext_Session_ip(ctx, field)
+			case "expiresIn":
+				return ec.fieldContext_Session_expiresIn(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Session", field.Name)
 		},
 	}
 	return fc, nil
@@ -4997,6 +6059,50 @@ func (ec *executionContext) unmarshalInputCreatePostInput(ctx context.Context, o
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputDeleteSessionInput(ctx context.Context, obj interface{}) (domain.DeleteSessionInput, error) {
+	var it domain.DeleteSessionInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"id", "refresh", "secret"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.Id, err = ec.unmarshalNID2githubᚗcomᚋsegmentioᚋksuidᚐKSUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "refresh":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("refresh"))
+			it.Refresh, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "secret":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("secret"))
+			it.Secret, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputForgotPasswordInput(ctx context.Context, obj interface{}) (domain.ForgotPasswordInput, error) {
 	var it domain.ForgotPasswordInput
 	asMap := map[string]interface{}{}
@@ -5041,6 +6147,42 @@ func (ec *executionContext) unmarshalInputForgotPasswordInput(ctx context.Contex
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputSessionCredInput(ctx context.Context, obj interface{}) (domain.SessionCredInput, error) {
+	var it domain.SessionCredInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"refresh", "secret"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "refresh":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("refresh"))
+			it.Refresh, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "secret":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("secret"))
+			it.Secret, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputSignInInput(ctx context.Context, obj interface{}) (domain.SignInInput, error) {
 	var it domain.SignInInput
 	asMap := map[string]interface{}{}
@@ -5048,7 +6190,7 @@ func (ec *executionContext) unmarshalInputSignInInput(ctx context.Context, obj i
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"username", "password"}
+	fieldsInOrder := [...]string{"username", "password", "secret"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -5071,6 +6213,14 @@ func (ec *executionContext) unmarshalInputSignInInput(ctx context.Context, obj i
 			if err != nil {
 				return it, err
 			}
+		case "secret":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("secret"))
+			it.Secret, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		}
 	}
 
@@ -5084,7 +6234,7 @@ func (ec *executionContext) unmarshalInputSignUpInput(ctx context.Context, obj i
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"username", "email", "password", "code"}
+	fieldsInOrder := [...]string{"username", "email", "password", "code", "secret"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -5120,6 +6270,14 @@ func (ec *executionContext) unmarshalInputSignUpInput(ctx context.Context, obj i
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("code"))
 			it.Code, err = ec.unmarshalNUint642uint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "secret":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("secret"))
+			it.Secret, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -5282,6 +6440,15 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_refreshToken(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "deleteSession":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_deleteSession(ctx, field)
 			})
 
 			if out.Values[i] == graphql.Null {
@@ -5551,6 +6718,49 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Query")
+		case "session":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_session(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
+		case "sessions":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_sessions(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
 		case "post":
 			field := field
 
@@ -5625,6 +6835,156 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Query___schema(ctx, field)
 			})
+
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var sessionImplementors = []string{"Session"}
+
+func (ec *executionContext) _Session(ctx context.Context, sel ast.SelectionSet, obj *domain.Session) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, sessionImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Session")
+		case "id":
+
+			out.Values[i] = ec._Session_id(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "userId":
+
+			out.Values[i] = ec._Session_userId(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "ip":
+
+			out.Values[i] = ec._Session_ip(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "expiresIn":
+
+			out.Values[i] = ec._Session_expiresIn(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var sessionConnectionImplementors = []string{"SessionConnection"}
+
+func (ec *executionContext) _SessionConnection(ctx context.Context, sel ast.SelectionSet, obj *domain.SessionConnection) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, sessionConnectionImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("SessionConnection")
+		case "nodes":
+
+			out.Values[i] = ec._SessionConnection_nodes(ctx, field, obj)
+
+		case "edges":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._SessionConnection_edges(ctx, field, obj)
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "pageInfo":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._SessionConnection_pageInfo(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "totalCount":
+
+			out.Values[i] = ec._SessionConnection_totalCount(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var sessionEdgeImplementors = []string{"SessionEdge"}
+
+func (ec *executionContext) _SessionEdge(ctx context.Context, sel ast.SelectionSet, obj *domain.SessionEdge) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, sessionEdgeImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("SessionEdge")
+		case "cursor":
+
+			out.Values[i] = ec._SessionEdge_cursor(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "node":
+
+			out.Values[i] = ec._SessionEdge_node(ctx, field, obj)
 
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
@@ -6083,6 +7443,11 @@ func (ec *executionContext) unmarshalNCreatePostInput2githubᚗcomᚋdurudexᚋd
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) unmarshalNDeleteSessionInput2githubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdomainᚐDeleteSessionInput(ctx context.Context, v interface{}) (domain.DeleteSessionInput, error) {
+	res, err := ec.unmarshalInputDeleteSessionInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalNForgotPasswordInput2githubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdomainᚐForgotPasswordInput(ctx context.Context, v interface{}) (domain.ForgotPasswordInput, error) {
 	res, err := ec.unmarshalInputForgotPasswordInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -6144,6 +7509,25 @@ func (ec *executionContext) marshalNPostConnection2ᚖgithubᚗcomᚋdurudexᚋd
 		return graphql.Null
 	}
 	return ec._PostConnection(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNSessionConnection2githubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdomainᚐSessionConnection(ctx context.Context, sel ast.SelectionSet, v domain.SessionConnection) graphql.Marshaler {
+	return ec._SessionConnection(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNSessionConnection2ᚖgithubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdomainᚐSessionConnection(ctx context.Context, sel ast.SelectionSet, v *domain.SessionConnection) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._SessionConnection(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNSessionCredInput2githubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdomainᚐSessionCredInput(ctx context.Context, v interface{}) (domain.SessionCredInput, error) {
+	res, err := ec.unmarshalInputSessionCredInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalNSignInInput2githubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdomainᚐSignInInput(ctx context.Context, v interface{}) (domain.SignInInput, error) {
@@ -6643,6 +8027,102 @@ func (ec *executionContext) marshalOPostEdge2ᚖgithubᚗcomᚋdurudexᚋdurudex
 		return graphql.Null
 	}
 	return ec._PostEdge(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOSession2ᚕᚖgithubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdomainᚐSession(ctx context.Context, sel ast.SelectionSet, v []*domain.Session) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOSession2ᚖgithubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdomainᚐSession(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
+}
+
+func (ec *executionContext) marshalOSession2ᚖgithubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdomainᚐSession(ctx context.Context, sel ast.SelectionSet, v *domain.Session) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Session(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOSessionEdge2ᚕᚖgithubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdomainᚐSessionEdge(ctx context.Context, sel ast.SelectionSet, v []*domain.SessionEdge) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOSessionEdge2ᚖgithubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdomainᚐSessionEdge(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
+}
+
+func (ec *executionContext) marshalOSessionEdge2ᚖgithubᚗcomᚋdurudexᚋdurudexᚑtestᚑapiᚋinternalᚋdomainᚐSessionEdge(ctx context.Context, sel ast.SelectionSet, v *domain.SessionEdge) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._SessionEdge(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOString2ᚕstringᚄ(ctx context.Context, v interface{}) ([]string, error) {

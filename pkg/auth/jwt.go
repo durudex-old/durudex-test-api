@@ -8,7 +8,6 @@
 package auth
 
 import (
-	"crypto/rand"
 	"fmt"
 	"time"
 
@@ -19,7 +18,6 @@ import (
 type JWT interface {
 	GenerateAccessToken(subject, signingKey string, ttl time.Duration) (string, error)
 	Parse(accessToken, signingKey string) (string, error)
-	GenerateRefreshToken() (string, error)
 }
 
 // Generating a new jwt access token.
@@ -54,15 +52,4 @@ func Parse(accessToken, signingKey string) (string, error) {
 	}
 
 	return claims["sub"].(string), nil
-}
-
-// Generating a new refresh token.
-func GenerateRefreshToken() (string, error) {
-	b := make([]byte, 32)
-
-	if _, err := rand.Read(b); err != nil {
-		return "", err
-	}
-
-	return fmt.Sprintf("%x", b), nil
 }

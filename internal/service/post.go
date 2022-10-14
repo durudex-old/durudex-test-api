@@ -85,41 +85,10 @@ func (s *PostService) Post(ctx context.Context, id ksuid.KSUID) (*domain.Post, e
 
 // Getting a posts.
 func (s *PostService) Posts(ctx context.Context, sort domain.SortOptions) (*domain.PostConnection, error) {
-	var limit int
-
-	// Check filter and last filters.
-	switch {
-	// Check if first and last filters is not nil.
-	case sort.First != nil && sort.Last != nil:
-		return nil, &gqlerror.Error{
-			Message:    "Must be `first` or `last`",
-			Extensions: map[string]interface{}{"code": domain.CodeInvalidArgument},
-		}
-	// Check if first filter is nil.
-	case sort.First == nil:
-		// Check if last filter is nil or set last filter.
-		if sort.Last == nil {
-			return nil, &gqlerror.Error{
-				Message:    "Must be `first` or `last`",
-				Extensions: map[string]interface{}{"code": domain.CodeInvalidArgument},
-			}
-		} else if *sort.Last > 50 || *sort.Last < 1 {
-			return nil, &gqlerror.Error{
-				Message:    "`last` must not exceed 50 or be less than 1",
-				Extensions: map[string]interface{}{"code": domain.CodeInvalidArgument},
-			}
-		}
-
-		limit = *sort.Last
-	// Check if first filter is nil or set last filter.
-	case *sort.First > 50 || *sort.First < 1:
-		return nil, &gqlerror.Error{
-			Message:    "`first` must not exceed 50 or be less than 1",
-			Extensions: map[string]interface{}{"code": domain.CodeInvalidArgument},
-		}
-	// Set first filter.
-	default:
-		limit = *sort.First
+	// Validating query sort options.
+	limit, err := sort.Validate()
+	if err != nil {
+		return nil, err
 	}
 
 	if limit == 1 {

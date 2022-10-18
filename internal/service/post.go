@@ -20,15 +20,15 @@ import (
 // Post service interface.
 type Post interface {
 	// Creating a new post.
-	CreatePost(ctx context.Context, input domain.CreatePostInput) (ksuid.KSUID, error)
+	Create(ctx context.Context, input domain.CreatePostInput) (ksuid.KSUID, error)
 	// Deleting a post.
-	DeletePost(ctx context.Context, id ksuid.KSUID) (bool, error)
+	Delete(ctx context.Context, id ksuid.KSUID) (bool, error)
 	// Updating a post.
-	UpdatePost(ctx context.Context, input domain.UpdatePostInput) (bool, error)
+	Update(ctx context.Context, input domain.UpdatePostInput) (bool, error)
 	// Getting a post.
-	Post(ctx context.Context, id ksuid.KSUID) (*domain.Post, error)
+	Get(ctx context.Context, id ksuid.KSUID) (*domain.Post, error)
 	// Getting a posts.
-	Posts(ctx context.Context, sort domain.SortOptions) (*domain.PostConnection, error)
+	GetList(ctx context.Context, sort domain.SortOptions) (*domain.PostConnection, error)
 }
 
 // Post service structure.
@@ -40,7 +40,7 @@ func NewPostService() *PostService {
 }
 
 // Creating a new post.
-func (s *PostService) CreatePost(ctx context.Context, input domain.CreatePostInput) (ksuid.KSUID, error) {
+func (s *PostService) Create(ctx context.Context, input domain.CreatePostInput) (ksuid.KSUID, error) {
 	// Validate input.
 	if err := input.Validate(); err != nil {
 		return ksuid.Nil, err
@@ -50,7 +50,7 @@ func (s *PostService) CreatePost(ctx context.Context, input domain.CreatePostInp
 }
 
 // Deleting a post.
-func (s *PostService) DeletePost(ctx context.Context, id ksuid.KSUID) (bool, error) {
+func (s *PostService) Delete(ctx context.Context, id ksuid.KSUID) (bool, error) {
 	if id.IsNil() {
 		return false, &gqlerror.Error{
 			Message:    "Post not found",
@@ -62,7 +62,7 @@ func (s *PostService) DeletePost(ctx context.Context, id ksuid.KSUID) (bool, err
 }
 
 // Updating a post.
-func (s *PostService) UpdatePost(ctx context.Context, input domain.UpdatePostInput) (bool, error) {
+func (s *PostService) Update(ctx context.Context, input domain.UpdatePostInput) (bool, error) {
 	// Validate input.
 	if err := input.Validate(); err != nil {
 		return false, err
@@ -72,7 +72,7 @@ func (s *PostService) UpdatePost(ctx context.Context, input domain.UpdatePostInp
 }
 
 // Getting a post.
-func (s *PostService) Post(ctx context.Context, id ksuid.KSUID) (*domain.Post, error) {
+func (s *PostService) Get(ctx context.Context, id ksuid.KSUID) (*domain.Post, error) {
 	if id.IsNil() {
 		return nil, &gqlerror.Error{
 			Message:    "Post not found",
@@ -84,7 +84,7 @@ func (s *PostService) Post(ctx context.Context, id ksuid.KSUID) (*domain.Post, e
 }
 
 // Getting a posts.
-func (s *PostService) Posts(ctx context.Context, sort domain.SortOptions) (*domain.PostConnection, error) {
+func (s *PostService) GetList(ctx context.Context, sort domain.SortOptions) (*domain.PostConnection, error) {
 	// Validating query sort options.
 	limit, err := sort.Validate()
 	if err != nil {

@@ -11,16 +11,20 @@ import "github.com/durudex/durudex-test-api/internal/config"
 
 // Service structure.
 type Service struct {
-	Auth
-	User
-	Post
+	Auth    Auth
+	User    User
+	Session Session
+	Post    Post
 }
 
 // Creating a new service.
 func NewService(cfg *config.Config) *Service {
+	sessionService := NewSessionService(&cfg.Auth)
+
 	return &Service{
-		Auth: NewAuthService(&cfg.Auth),
-		User: NewUserService(),
-		Post: NewPostService(),
+		Auth:    NewAuthService(sessionService, &cfg.Auth),
+		User:    NewUserService(),
+		Session: sessionService,
+		Post:    NewPostService(),
 	}
 }

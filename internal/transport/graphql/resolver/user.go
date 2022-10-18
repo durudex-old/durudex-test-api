@@ -29,17 +29,17 @@ func (r *mutationResolver) UpdateAvatar(ctx context.Context, file graphql.Upload
 
 // Me is the resolver for the me field.
 func (r *queryResolver) Me(ctx context.Context) (*domain.User, error) {
-	return r.service.User.User(ctx, ksuid.New())
+	return r.service.User.Get(ctx, ksuid.New())
 }
 
 // User is the resolver for the user field.
 func (r *queryResolver) User(ctx context.Context, id ksuid.KSUID) (*domain.User, error) {
-	return r.service.User.User(ctx, id)
+	return r.service.User.Get(ctx, id)
 }
 
 // Posts is the resolver for the posts field.
 func (r *userResolver) Posts(ctx context.Context, obj *domain.User, first *int, last *int, before *string, after *string) (*domain.PostConnection, error) {
-	return r.service.Post.Posts(ctx, domain.SortOptions{
+	return r.service.Post.GetList(ctx, domain.SortOptions{
 		First:  first,
 		Last:   last,
 		Before: before,

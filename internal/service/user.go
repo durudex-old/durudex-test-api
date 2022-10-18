@@ -26,7 +26,7 @@ type User interface {
 	// Update user avatar.
 	UpdateAvatar(ctx context.Context, file graphql.Upload) (string, error)
 	// Getting a user.
-	User(ctx context.Context, id ksuid.KSUID) (*domain.User, error)
+	Get(ctx context.Context, id ksuid.KSUID) (*domain.User, error)
 }
 
 // User service structure.
@@ -66,7 +66,7 @@ func (s *UserService) UpdateAvatar(ctx context.Context, file graphql.Upload) (st
 }
 
 // Getting a user.
-func (s *UserService) User(ctx context.Context, id ksuid.KSUID) (*domain.User, error) {
+func (s *UserService) Get(ctx context.Context, id ksuid.KSUID) (*domain.User, error) {
 	if id.IsNil() {
 		return nil, &gqlerror.Error{
 			Message:    "User not found",

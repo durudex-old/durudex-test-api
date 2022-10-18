@@ -55,5 +55,5 @@ func (h *Handler) GraphqlHandler() http.HandlerFunc {
 
 // GraphQL playground handler.
 func (h *Handler) PlaygroundHandler() http.HandlerFunc {
-	return playground.Handler("GraphQL", "/query")
+	return playground.Handler("Durudex Test API", "/query")
 }

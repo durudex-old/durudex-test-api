@@ -14,17 +14,17 @@ import (
 
 // CreatePost is the resolver for the createPost field.
 func (r *mutationResolver) CreatePost(ctx context.Context, input domain.CreatePostInput) (ksuid.KSUID, error) {
-	return r.service.Post.CreatePost(ctx, input)
+	return r.service.Post.Create(ctx, input)
 }
 
 // DeletePost is the resolver for the deletePost field.
 func (r *mutationResolver) DeletePost(ctx context.Context, id ksuid.KSUID) (bool, error) {
-	return r.service.Post.DeletePost(ctx, id)
+	return r.service.Post.Delete(ctx, id)
 }
 
 // UpdatePost is the resolver for the updatePost field.
 func (r *mutationResolver) UpdatePost(ctx context.Context, input domain.UpdatePostInput) (bool, error) {
-	return r.service.Post.UpdatePost(ctx, input)
+	return r.service.Post.Update(ctx, input)
 }
 
 // Edges is the resolver for the edges field.
@@ -57,7 +57,7 @@ func (r *postConnectionResolver) PageInfo(ctx context.Context, obj *domain.PostC
 
 // Post is the resolver for the post field.
 func (r *queryResolver) Post(ctx context.Context, id ksuid.KSUID) (*domain.Post, error) {
-	return r.service.Post.Post(ctx, id)
+	return r.service.Post.Get(ctx, id)
 }
 
 // PostConnection returns generated.PostConnectionResolver implementation.

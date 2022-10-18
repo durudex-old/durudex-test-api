@@ -8,10 +8,6 @@
 package domain
 
 import (
-	"time"
-
-	"github.com/bxcodec/faker/v3"
-	"github.com/segmentio/ksuid"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
@@ -21,44 +17,6 @@ type Tokens struct {
 	Access string `json:"access"`
 	// Refresh token.
 	Refresh string `json:"refresh"`
-}
-
-// User session.
-type Session struct {
-	// Session id.
-	Id ksuid.KSUID `json:"id"`
-	// Session user id.
-	UserId ksuid.KSUID `json:"userId"`
-	// User session ip address.
-	Ip string `json:"ip"`
-	// Session expires in.
-	ExpiresIn time.Time `json:"expiresIn"`
-}
-
-// Creating a new user session.
-func NewSession(id ksuid.KSUID) *Session {
-	return &Session{
-		Id:        id,
-		UserId:    ksuid.New(),
-		Ip:        faker.IPv4(),
-		ExpiresIn: time.Unix(faker.RandomUnixTime(), 0),
-	}
-}
-
-// List of session owned by the subject.
-type SessionConnection struct {
-	// A list of nodes.
-	Nodes []*Session `json:"nodes"`
-	// Identifies the total count of items in the connection.
-	TotalCount int `json:"totalCount"`
-}
-
-// An edge in a session connection.
-type SessionEdge struct {
-	// A cursor for use in pagination.
-	Cursor string `json:"cursor"`
-	// The item at the end of the edge.
-	Node *Session `json:"node"`
 }
 
 // User Sign Up input.
@@ -109,8 +67,8 @@ func (i SignUpInput) Validate() error {
 
 // User Sign In input.
 type SignInInput struct {
-	// Account username.
-	Username string `json:"username"`
+	// Account login.
+	Login string `json:"login"`
 	// User password
 	Password string `json:"password"`
 	// Client secret key.
@@ -120,7 +78,7 @@ type SignInInput struct {
 // Validate user sign in input.
 func (i SignInInput) Validate() error {
 	switch {
-	case !RxUsername.MatchString(i.Username):
+	case !RxUsername.MatchString(i.Login):
 		// Return invalid username graphql error.
 		return &gqlerror.Error{
 			Message:    "Invalid Username",
@@ -135,16 +93,6 @@ func (i SignInInput) Validate() error {
 	default:
 		return nil
 	}
-}
-
-// Delete user session input.
-type DeleteSessionInput struct {
-	// Session id.
-	Id ksuid.KSUID `json:"id"`
-	// Refresh token.
-	Refresh string `json:"refresh"`
-	// Client secret key.
-	Secret string `json:"secret"`
 }
 
 // Session credentials input.
